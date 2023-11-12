@@ -1,15 +1,23 @@
-# inanna-backend/Dockerfile
-FROM node:16
+# Use an official Node.js image
+FROM node:16-alpine
 
+# Set the working directory
 WORKDIR /app
 
+# Copy package.json and yarn.lock to the working directory
 COPY package.json yarn.lock ./
 
-RUN yarn
-RUN npx prisma generate
+# Install dependencies
+RUN yarn install
 
+# Copy the rest of the application code
 COPY . .
 
-EXPOSE 3005
+# Generate Prisma client
+RUN npx prisma generate
 
-CMD ["node", "src/start-server.js"]
+# Expose the port on which the app will run
+EXPOSE 3001
+
+# Command to run your application
+CMD ["node", "server.js"]
