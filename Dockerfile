@@ -1,6 +1,8 @@
 # Use an official Node.js image
 FROM node:16-alpine
 
+# RUN apt-get -qy update 
+
 # Set the working directory
 WORKDIR /app
 
