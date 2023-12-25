@@ -6,7 +6,25 @@ const { PrismaClient } = require('@prisma/client');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken'); // Import the jsonwebtoken library
 
-const prisma = new PrismaClient();
+// const prisma = new PrismaClient();
+// Replace the following information with your Google Cloud SQL instance details
+const dbConfig = {
+  user: 'root',
+  password: 'root12345',
+  database: 'innana-db',
+  host: '34.132.215.148',
+  port: 3306,
+};
+
+// Connect Prisma to the Google Cloud SQL instance
+const prisma = new PrismaClient({
+  datasources: {
+    db: {
+      url: `mysql://${dbConfig.user}:${dbConfig.password}@${dbConfig.host}:${dbConfig.port}/${dbConfig.database}`,
+    },
+  },
+});
+
 const app = express();
 
 app.use(cors());
