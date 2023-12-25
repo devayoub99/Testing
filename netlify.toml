@@ -2,30 +2,11 @@
   command = "yarn start"
   functions = "functions"
 
-[[functions]]
-  path = "/.netlify/functions/register"
-  command = "node functions/register.js"
-
-[[functions]]
-  path = "/.netlify/functions/login"
-  command = "node functions/login.js"
-
-[[functions]]
-  path = "/.netlify/functions/logout"
-  command = "node functions/logout.js"
-
-[[functions]]
-  path = "/.netlify/functions/fetchUsers"
-  command = "node functions/fetchUsers.js"
-
-[[functions]]
-  path = "/.netlify/functions/fetchCompanies"
-  command = "node functions/fetchCompanies.js"
-
-[[functions]]
-  path = "/.netlify/functions/fetchProducts"
-  command = "node functions/fetchProducts.js"
-
-[[functions]]
-  path = "/.netlify/functions/createProduct"
-  command = "node functions/createProduct.js"
+[functions]
+  register = "node functions/register.js"
+  login = "node functions/login.js"
+  logout = "node functions/logout.js"
+  fetchUsers = "node functions/fetchUsers.js"
+  fetchCompanies = "node functions/fetchCompanies.js"
+  fetchProducts = "node functions/fetchProducts.js"
+  createProduct = "node functions/createProduct.js"
