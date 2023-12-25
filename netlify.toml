@@ -3,10 +3,45 @@
   functions = "functions"
 
 [functions]
-  register = "node functions/register.js"
-  login = "node functions/login.js"
-  logout = "node functions/logout.js"
-  fetchUsers = "node functions/fetchUsers.js"
-  fetchCompanies = "node functions/fetchCompanies.js"
-  fetchProducts = "node functions/fetchProducts.js"
-  createProduct = "node functions/createProduct.js"
+
+  [functions.register]
+  external_node_modules = [
+    "module-one",
+    "module-two"
+  ]
+
+[functions.login]
+  external_node_modules = [
+    "module-one",
+    "module-two"
+  ]
+
+[functions.logout]
+  external_node_modules = [
+    "module-one",
+    "module-two"
+  ]
+
+[functions.fetchUsers]
+  external_node_modules = [
+    "module-one",
+    "module-two"
+  ]
+
+[functions.fetchCompanies]
+  external_node_modules = [
+    "module-one",
+    "module-two"
+  ]
+
+[functions.fetchProducts]
+  external_node_modules = [
+    "module-one",
+    "module-two"
+  ]
+
+[functions.createProduct]
+  external_node_modules = [
+    "module-one",
+    "module-two"
+  ]
