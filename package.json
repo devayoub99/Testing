@@ -20,5 +20,7 @@
     "prisma": "^5.6.0",
     "serverless-http": "^2.3.3"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "netlify-lambda": "^2.0.16"
+  }
 }

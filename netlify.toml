@@ -1,7 +1,9 @@
 [build]
   command = "yarn install && yarn build"
   functions = "functions"
+  publish = "dist"
 
+  
 [functions]
 
   [functions.register]
