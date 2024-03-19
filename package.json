@@ -8,8 +8,8 @@
     "prestart": "yarn build"
   },
   "dependencies": {
-    "@babel/cli": "^7.23.4",
-    "@babel/core": "^7.23.6",
+    "@babel/cli": "^7.23.9",
+    "@babel/core": "^7.23.9",
     "@babel/preset-env": "^7.23.6",
     "@prisma/client": "^3.15.2",
     "bcryptjs": "^2.4.3",

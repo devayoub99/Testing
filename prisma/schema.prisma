@@ -23,7 +23,7 @@ model Company {
   email    String   @unique
   password String
   // Other company-specific fields
-  products Product[]
+  safras Safra[]
 }
 
 model Customer {
@@ -32,16 +32,16 @@ model Customer {
   email    String @unique
   password String
   // Other customer-specific fields
-  products Product[] // Customers can view and buy multiple products
+  safras Safra[] // Customers can view and buy multiple safras
 }
 
-model Product {
+model Safra {
   id        Int      @id @default(autoincrement())
   name      String
   companyId Int?
   company   Company? @relation(fields: [companyId], references: [id])
   customers Customer[]
-  // Other product-specific fields
+  // Other safra-specific fields
 }
 
 

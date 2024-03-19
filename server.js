@@ -214,6 +214,42 @@ app.post('/products', async (req, res) => {
 
 
 
+// Create Safra route
+app.post('/safra', async (req, res) => {
+  const {
+    safraName,
+    safraType,
+    dateFrom,
+    dateTo,
+    timeStart,
+    timeEnd,
+    safraPrice,
+    safraProgramme,
+    offer
+  } = req.body;
+
+  try {
+    const safra = await prisma.safra.create({
+      data: {
+        name: safraName,
+        type: safraType,
+        dateFrom,
+        dateTo,
+        timeStart,
+        timeEnd,
+        price: parseFloat(safraPrice),
+        programme: safraProgramme,
+        offer
+      }
+    });
+
+    console.log('Safra created:', safra);
+    res.status(201).json(safra);
+  } catch (error) {
+    console.error('Failed to create Safra:', error);
+    res.status(500).json({ error: 'Failed to create Safra' });
+  }
+});
 
 
 
