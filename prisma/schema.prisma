@@ -41,6 +41,12 @@ model Safra {
   companyId Int?
   company   Company? @relation(fields: [companyId], references: [id])
   customers Customer[]
+  dateFrom  DateTime
+  dateTo    DateTime
+  type      String
+  programme String
+  offer     String
+  ranking   String
   // Other safra-specific fields
 }
 
