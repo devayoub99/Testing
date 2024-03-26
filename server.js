@@ -206,20 +206,20 @@ app.get("/companies", async (req, res) => {
 });
 
 // Fetch products route
-app.get("/products", async (req, res) => {
-  try {
-    const products = await prisma.product.findMany({
-      include: {
-        company: true, // Include company details in the response
-      },
-    });
+// app.get("/products", async (req, res) => {
+//   try {
+//     const products = await prisma.product.findMany({
+//       include: {
+//         company: true, // Include company details in the response
+//       },
+//     });
 
-    res.status(200).json(products);
-  } catch (error) {
-    console.error("Failed to fetch products:", error);
-    res.status(500).json({ error: "Failed to fetch products" });
-  }
-});
+//     res.status(200).json(products);
+//   } catch (error) {
+//     console.error("Failed to fetch products:", error);
+//     res.status(500).json({ error: "Failed to fetch products" });
+//   }
+// });
 
 // Create product route
 app.post("/products", async (req, res) => {
@@ -244,7 +244,7 @@ app.post("/products", async (req, res) => {
 // Create Safra route
 app.post("/createTrip", async (req, res) => {
   // console.log(`DATA: ${JSON.stringify(req.body)}`);
-
+console.log("This is the req body: ", req.body);
   const {
     safraName,
     safraType,
