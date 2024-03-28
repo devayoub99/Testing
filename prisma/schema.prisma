@@ -60,8 +60,7 @@ model Safra {
   company   Company? @relation(fields: [companyId], references: [id])
   customers Customer[]
   type      String
-  programId Int?
-  programme Programme? @relation(fields: [programId], references: [id])
+  programme Programme[]
   offer     String? @db.Text
 }
 
