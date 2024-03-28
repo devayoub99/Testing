@@ -22,8 +22,14 @@ model Company {
   name     String
   email    String   @unique
   password String
+  location String
+  website  String?
+  logo     String?
+  docs     String?
+  ranking   String?
   // Other company-specific fields
   safras Safra[]
+
 }
 
 model Customer {
@@ -35,19 +41,30 @@ model Customer {
   safras Safra[] // Customers can view and buy multiple safras
 }
 
+
+model Programme {
+  id        Int      @id @default(autoincrement())
+  dayNum    Int
+  program   String @db.Text 
+  safra     Safra[] 
+}
+
 model Safra {
   id        Int      @id @default(autoincrement())
   name      String
-  companyId Int?
-  company   Company? @relation(fields: [companyId], references: [id])
-  customers Customer[]
+  desc      String @db.Text
   dateFrom  DateTime
   dateTo    DateTime
+  companyId Int?
+  price     String
+  company   Company? @relation(fields: [companyId], references: [id])
+  customers Customer[]
   type      String
-  programme String
-  offer     String
-  ranking   String
-  // Other safra-specific fields
+  programId Int?
+  programme Programme? @relation(fields: [programId], references: [id])
+  offer     String? @db.Text
 }
+
+
 
 
