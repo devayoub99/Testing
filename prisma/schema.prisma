@@ -25,9 +25,11 @@ model Company {
   location String
   website  String?
   logo     String?
-  docs     String
+  docs     String?
+  ranking   String?
   // Other company-specific fields
   safras Safra[]
+
 }
 
 model Customer {
@@ -58,9 +60,9 @@ model Safra {
   company   Company? @relation(fields: [companyId], references: [id])
   customers Customer[]
   type      String
-  programme Programme[]
-  offer     String @db.Text
-  ranking   String?
+  programId Int?
+  programme Programme? @relation(fields: [programId], references: [id])
+  offer     String? @db.Text
 }
 
 
