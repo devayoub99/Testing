@@ -317,11 +317,47 @@ app.get("/trip", async (req, res) => {
         programme: true, // Include related SafraProgramme entries
       },
     });
-    console.log(trip)
+    console.log(trip);
     res.status(200).json(trip);
   } catch (error) {
     console.error("Failed to fetch Trip:", error);
     res.status(500).json({ error: "Failed to fetch Trip" });
+  }
+});
+
+app.post("/passenger", async (req, res) => {
+  console.log(res.body);
+  try {
+    const {
+      firstName,
+      middleName,
+      lastName,
+      gender,
+      dateOfBirth,
+      nationality,
+    } = req.body;
+    const passenger = await prisma.passenger.create({
+      data: {
+        firstName,
+        middleName,
+        lastName,
+        gender,
+        dateOfBirth,
+        nationality,
+      },
+    });
+    res.json(passenger);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to create passenger" });
+  }
+});
+
+app.get("/passengers", async (req, res) => {
+  try {
+    const passengers = await prisma.passenger.findMany();
+    res.json(passengers);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to retrieve passengers" });
   }
 });
 

@@ -67,6 +67,15 @@ model Safra {
   offer     String? @db.Text
 }
 
+model Passenger {
+  id          Int      @id @default(autoincrement())
+  firstName   String
+  middleName  String
+  lastName    String
+  gender      String
+  dateOfBirth DateTime
+  nationality String
+}
 
 
 
