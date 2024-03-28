@@ -94,7 +94,7 @@ app.post("/register", async (req, res) => {
 app.post("/login", async (req, res) => {
   const { email, password } = req.body;
 
-  console.log("Our Credentials", email, password)
+  console.log("Our Credentials", email, password);
 
   try {
     // Check against customer table
@@ -233,7 +233,7 @@ app.post("/products", async (req, res) => {
       },
     });
 
-    console.log("Product created:", product);
+    // console.log("Product created:", product);
     res.status(201).json(product);
   } catch (error) {
     console.error("Failed to create product:", error);
@@ -244,19 +244,19 @@ app.post("/products", async (req, res) => {
 // Create Safra route
 app.post("/createTrip", async (req, res) => {
   // console.log(`DATA: ${JSON.stringify(req.body)}`);
-console.log("This is the req body: ", req.body);
+  // console.log("This is the req body: ", req.body);
   const {
     safraName,
     safraType,
     safraDescription,
     dateFrom,
     dateTo,
-    timeStart,
-    timeEnd,
     safraPrice,
     safraProgramme,
     offer,
   } = req.body;
+
+  // console.log(`safraProgramme => ${safraProgramme}`);
 
   try {
     const safra = await prisma.safra.create({
@@ -266,11 +266,20 @@ console.log("This is the req body: ", req.body);
         desc: safraDescription,
         dateFrom,
         dateTo,
-        timeStart,
-        timeEnd,
         price: safraPrice,
-        programme: safraProgramme,
+        programme: {
+          create: safraProgramme.map((item) => {
+            console.log(item);
+            return {
+              program: item.program,
+              dayNum: item.dayNum,
+            };
+          }),
+        },
         offer: offer,
+      },
+      include: {
+        programme: true, // Include related entries in the response
       },
     });
     console.log("Safra created:", safra);
@@ -284,6 +293,7 @@ console.log("This is the req body: ", req.body);
 // Fetch Trips route
 app.get("/trips", async (req, res) => {
   try {
+    // const trips = await prisma.safra.findMany();
     const trips = await prisma.safra.findMany();
     res.status(200).json(trips);
   } catch (error) {
@@ -300,7 +310,11 @@ app.get("/trip", async (req, res) => {
       where: {
         id: parseInt(tripId),
       },
+      include: {
+        programme: true, // Include related SafraProgramme entries
+      },
     });
+    console.log(trip)
     res.status(200).json(trip);
   } catch (error) {
     console.error("Failed to fetch Trip:", error);

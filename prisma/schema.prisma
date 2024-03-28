@@ -39,23 +39,30 @@ model Customer {
   safras Safra[] // Customers can view and buy multiple safras
 }
 
+
+model Programme {
+  id        Int      @id @default(autoincrement())
+  dayNum    Int
+  program   String @db.Text 
+  safra     Safra[] 
+}
+
 model Safra {
   id        Int      @id @default(autoincrement())
   name      String
   desc      String @db.Text
   dateFrom  DateTime
   dateTo    DateTime
-  timeStart String
-  timeEnd   String
   companyId Int?
   price     String
   company   Company? @relation(fields: [companyId], references: [id])
   customers Customer[]
   type      String
-  programme String @db.Text
+  programme Programme[]
   offer     String @db.Text
   ranking   String?
 }
+
 
 
 
