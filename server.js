@@ -52,6 +52,7 @@ app.post("/register", async (req, res) => {
     if (userType === "customer") {
       newUser = await prisma.customer.create({
         data: {
+          userType,
           username,
           email,
           password: hashedPassword,
@@ -60,6 +61,7 @@ app.post("/register", async (req, res) => {
     } else if (userType === "company") {
       newUser = await prisma.company.create({
         data: {
+          userType,
           name: username, // Use 'name' for the company's name
           email,
           password: hashedPassword,
@@ -72,6 +74,7 @@ app.post("/register", async (req, res) => {
     } else if (userType === "admin") {
       newUser = await prisma.admin.create({
         data: {
+          userType,
           username,
           email,
           password: hashedPassword,
