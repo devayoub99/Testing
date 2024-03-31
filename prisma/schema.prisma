@@ -40,8 +40,7 @@ model Customer {
   username String
   email    String @unique
   password String
-  // Other customer-specific fields
-  safras Safra[] // Customers can view and buy multiple safras
+  safras Safra[]
 }
 
 
@@ -73,7 +72,9 @@ model Passenger {
   middleName  String
   lastName    String
   gender      String
-  dateOfBirth DateTime
+  day         String
+  month       String
+  year        String
   nationality String
 }
 

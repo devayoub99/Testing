@@ -326,14 +326,15 @@ app.get("/trip", async (req, res) => {
 });
 
 app.post("/passenger", async (req, res) => {
-  console.log(res.body);
   try {
     const {
       firstName,
       middleName,
       lastName,
       gender,
-      dateOfBirth,
+      day,
+      month,
+      year,
       nationality,
     } = req.body;
     const passenger = await prisma.passenger.create({
@@ -342,7 +343,9 @@ app.post("/passenger", async (req, res) => {
         middleName,
         lastName,
         gender,
-        dateOfBirth,
+        day,
+        month,
+        year,
         nationality,
       },
     });
