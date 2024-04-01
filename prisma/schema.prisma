@@ -63,6 +63,8 @@ model Safra {
   customers Customer[]
   type      String
   programme Programme[]
+  fromLocation String
+  destination String
   offer     String? @db.Text
 }
 
