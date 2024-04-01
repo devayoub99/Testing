@@ -29,7 +29,7 @@ model Company {
   logo     String?
   docs     String?
   ranking   String?
-  // Other company-specific fields
+  approved Boolean    @default(false)
   safras Safra[]
 
 }
