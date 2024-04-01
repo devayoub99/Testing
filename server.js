@@ -208,6 +208,52 @@ app.get("/companies", async (req, res) => {
   }
 });
 
+app.get("/company", async (req, res) => {
+  try {
+    const companyId = req.headers.id;
+    const company = await prisma.company.findUnique({
+      where: {
+        id: parseInt(companyId),
+      },
+    });
+    res.status(200).json(company);
+  } catch (error) {
+    console.error("Failed to fetch Trip:", error);
+    res.status(500).json({ error: "Failed to fetch Trip" });
+  }
+});
+
+app.patch("/company", async (req, res) => {
+  try {
+    const companyId = req.headers.id;
+    const updatedCompany = await prisma.company.update({
+      where: { id: parseInt(companyId) },
+      data: { approved: true },
+    });
+    res.status(200).json(updatedCompany);
+  } catch (error) {
+    console.error("Failed to update company:", error);
+    res.status(500).json({ error: "Failed to update company" });
+  }
+});
+
+app.delete("/company/:id", async (req, res) => {
+  const companyId = req.params.id;
+
+  try {
+    await prisma.company.delete({
+      where: {
+        id: parseInt(companyId),
+      },
+    });
+
+    res.status(204).send(); // Send a successful response with no content
+  } catch (error) {
+    console.error("Failed to delete the company", error);
+    res.status(500).send("Failed to delete the company");
+  }
+});
+
 // Fetch products route
 // app.get("/products", async (req, res) => {
 //   try {
