@@ -293,10 +293,12 @@ app.post("/products", async (req, res) => {
 // Create Safra route
 app.post("/createTrip", async (req, res) => {
   // console.log(`DATA: ${JSON.stringify(req.body)}`);
-  // console.log("This is the req body: ", req.body);
+  console.log("This is the req body: ", req.body);
   const {
     safraName,
     safraType,
+    fromLocation,
+    destination,
     safraDescription,
     dateFrom,
     dateTo,
@@ -312,6 +314,8 @@ app.post("/createTrip", async (req, res) => {
       data: {
         name: safraName,
         type: safraType,
+        fromLocation,
+        destination,
         desc: safraDescription,
         dateFrom,
         dateTo,
@@ -338,6 +342,43 @@ app.post("/createTrip", async (req, res) => {
     res.status(500).json({ error: "Failed to create Safra" });
   }
 });
+
+// search the trip
+app.post("/searchTrips", async (req, res) => {
+  const searchQuery = req.body;
+  console.log("Search Query: ", searchQuery);
+
+  try {
+    let whereClause = {};
+
+
+    if (searchQuery.tripType) {
+      whereClause.type = { equals: searchQuery.tripType };
+    }
+    if (searchQuery.fromLocation) {
+      whereClause.fromLocation = { equals: searchQuery.fromLocation };
+    }
+    if (searchQuery.destination) {
+      whereClause.destination = { equals: searchQuery.destination };
+    }
+    if (searchQuery.dateFrom) {
+      whereClause.dateFrom = { equals: searchQuery.dateFrom };
+    }
+    if (searchQuery.dateTo) {
+      whereClause.dateTo = { equals: searchQuery.dateTo };
+    }
+
+    const trips = await prisma.safra.findMany({
+      where: whereClause,
+    });
+
+    res.status(200).json(trips);
+  } catch (error) {
+    console.error("Failed to search trips:", error);
+    res.status(500).json({ error: "Failed to search trips" });
+  }
+});
+
 
 // Fetch Trips route
 app.get("/trips", async (req, res) => {
