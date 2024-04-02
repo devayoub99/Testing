@@ -14,8 +14,8 @@ model Admin {
   userType String
   username String
   email    String @unique
+  phoneNumber String   @default("")
   password String
-  // Other admin-specific fields
 }
 
 model Company {
@@ -40,6 +40,10 @@ model Customer {
   username String
   email    String @unique
   password String
+  phoneNumber String   @default("")
+  day         String   @default("")
+  month       String   @default("")
+  year        String   @default("")
   safras   Trip[]
 }
 
