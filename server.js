@@ -145,12 +145,10 @@ app.post("/login", async (req, res) => {
           userType: "company",
         });
       } else {
-        return res
-          .status(401)
-          .json({
-            error:
-              "Your account is being reviewed by the admin. You will be notified if the admin approves your request",
-          });
+        return res.status(401).json({
+          error:
+            "Your account is being reviewed by the admin. You will be notified if the admin approves your request",
+        });
       }
     }
 
@@ -322,7 +320,7 @@ app.post("/createTrip", async (req, res) => {
   // console.log(`safraProgramme => ${safraProgramme}`);
 
   try {
-    const safra = await prisma.safra.create({
+    const safra = await prisma.trip.create({
       data: {
         name: safraName,
         type: safraType,
@@ -379,7 +377,7 @@ app.post("/searchTrips", async (req, res) => {
       whereClause.dateTo = { equals: searchQuery.dateTo };
     }
 
-    const trips = await prisma.safra.findMany({
+    const trips = await prisma.trip.findMany({
       where: whereClause,
     });
 
@@ -394,7 +392,7 @@ app.post("/searchTrips", async (req, res) => {
 app.get("/trips", async (req, res) => {
   try {
     // const trips = await prisma.safra.findMany();
-    const trips = await prisma.safra.findMany();
+    const trips = await prisma.trip.findMany();
     res.status(200).json(trips);
   } catch (error) {
     console.error("Failed to fetch trips:", error);
@@ -406,7 +404,7 @@ app.get("/trips", async (req, res) => {
 app.get("/trip", async (req, res) => {
   try {
     const tripId = req.headers.id;
-    const trip = await prisma.safra.findUnique({
+    const trip = await prisma.trip.findUnique({
       where: {
         id: parseInt(tripId),
       },
@@ -428,22 +426,28 @@ app.post("/passenger", async (req, res) => {
       firstName,
       middleName,
       lastName,
+      email,
+      phoneNumber,
       gender,
       day,
       month,
       year,
       nationality,
+      tripId,
     } = req.body;
     const passenger = await prisma.passenger.create({
       data: {
         firstName,
         middleName,
         lastName,
+        email,
+        phoneNumber,
         gender,
         day,
         month,
         year,
         nationality,
+        tripId,
       },
     });
     res.json(passenger);
