@@ -184,32 +184,42 @@ app.post("/login", async (req, res) => {
 
 // Edit user route
 app.patch("/editUser", async (req, res) => {
-  const { userType, id } = req.body;
+  const { userType, userId } = req.body;
   const newData = req.body;
   console.log("THe request body", req.body);
   try {
     let updatedUser;
     if (userType === "customer") {
       updatedUser = await prisma.customer.update({
-        where: { id: parseInt(id) },
+        where: { id: parseInt(userId) },
         data: {
-          username: newData.firstName,
+          username: newData.username,
           email: newData.email,
+          phoneNumber: newData.phoneNumber,
+          day: newData.day,
+          month: newData.month,
+          year: newData.year,
           password: newData.password,
         },
       });
+      // console.log("REQ BODY: ", req.body);
     } else if (userType === "admin") {
       updatedUser = await prisma.admin.update({
-        where: { id: parseInt(id) },
+        where: { id: parseInt(userId) },
         data: {
-          username: newData.firstName,
+          username: newData.username,
           email: newData.email,
+          phoneNumber: newData.phoneNumber,
+          day: newData.day,
+          month: newData.month,
+          year: newData.year,
           password: newData.password,
         },
       });
+      // console.log("ADMIN");
     } else if (userType === "company") {
       updatedUser = await prisma.company.update({
-        where: { id: parseInt(id) },
+        where: { id: parseInt(userId) },
         data: {
           name: newData.firstName,
           email: newData.email,
@@ -220,6 +230,7 @@ app.patch("/editUser", async (req, res) => {
           docs: newData.docs,
         },
       });
+      // console.log("COMPANY");
     } else {
       return res.status(400).json({ error: "Invalid user type" });
     }
@@ -511,6 +522,43 @@ app.get("/passengers", async (req, res) => {
     res.json(passengers);
   } catch (error) {
     res.status(500).json({ error: "Failed to retrieve passengers" });
+  }
+});
+
+app.get("/user/:userId", async (req, res) => {
+  const userId = parseInt(req.params.userId);
+  const { userType } = req.body;
+
+  console.log(`Your User type is ${userType}`);
+  try {
+    if (userType === "customer") {
+      updatedUser = await prisma.customer.update({
+        where: { id: parseInt(userId) },
+        data: {
+          username: newData.username,
+          email: newData.email,
+          phoneNumber: newData.phoneNumber,
+          day: newData.day,
+          month: newData.month,
+          year: newData.year,
+          password: newData.password,
+        },
+      });
+      // console.log("REQ BODY: ", req.body);
+    }
+    // ! STATIC TYPE => it should be dynamic
+    const user = await prisma.customer.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    res.json(user);
+  } catch (error) {
+    console.error("Error retrieving user data:", error);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
