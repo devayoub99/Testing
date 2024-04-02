@@ -172,6 +172,55 @@ app.post("/login", async (req, res) => {
   }
 });
 
+// Edit user route
+app.patch("/editUser", async (req, res) => {
+  const { userType, id } = req.body;
+  const newData = req.body;
+  console.log("THe request body", req.body);
+  try {
+    let updatedUser;
+    if (userType === "customer") {
+      updatedUser = await prisma.customer.update({
+        where: { id: parseInt(id) },
+        data: {
+          username: newData.firstName,
+          email: newData.email,
+          password: newData.password,
+        },
+      });
+    } else if (userType === "admin") {
+      updatedUser = await prisma.admin.update({
+        where: { id: parseInt(id) },
+        data: {
+          username: newData.firstName,
+          email: newData.email,
+          password: newData.password,
+        },
+      });
+    } else if (userType === "company") {
+      updatedUser = await prisma.company.update({
+        where: { id: parseInt(id) },
+        data: {
+          name: newData.firstName,
+          email: newData.email,
+          password: newData.password,
+          location: newData.location,
+          website: newData.website,
+          logo: newData.logo,
+          docs: newData.docs,
+        },
+      });
+    } else {
+      return res.status(400).json({ error: "Invalid user type" });
+    }
+    console.log("User updated:", updatedUser);
+    res.status(200).json(updatedUser);
+  } catch (error) {
+    console.error("Failed to update user:", error);
+    res.status(500).json({ error: "Failed to update user" });
+  }
+});
+
 // Logout route (optional)
 app.post("/logout", (req, res) => {
   // Perform any necessary cleanup on the server side
@@ -351,7 +400,6 @@ app.post("/searchTrips", async (req, res) => {
   try {
     let whereClause = {};
 
-
     if (searchQuery.tripType) {
       whereClause.type = { equals: searchQuery.tripType };
     }
@@ -378,7 +426,6 @@ app.post("/searchTrips", async (req, res) => {
     res.status(500).json({ error: "Failed to search trips" });
   }
 });
-
 
 // Fetch Trips route
 app.get("/trips", async (req, res) => {
