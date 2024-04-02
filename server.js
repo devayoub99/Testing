@@ -124,22 +124,34 @@ app.post("/login", async (req, res) => {
     // Check against company table
     const company = await prisma.company.findUnique({ where: { email } });
 
-    if (company && (await bcrypt.compare(password, company.password))) {
+    if (company) {
       // Login successful for company
-      const token = jwt.sign(
-        { userId: company.id, userType: "company" },
-        "your-secret-key",
-        { expiresIn: "1h" }
-      );
-      console.log("Login successful for company:", company);
-      return res.status(200).json({
-        message: "Login successful",
-        userId: company.id,
-        token,
-        username: company.name,
-        email: company.email,
-        userType: "company",
-      });
+      if (
+        company.approved &&
+        (await bcrypt.compare(password, company.password))
+      ) {
+        const token = jwt.sign(
+          { userId: company.id, userType: "company" },
+          "your-secret-key",
+          { expiresIn: "1h" }
+        );
+        console.log("Login successful for company:", company);
+        return res.status(200).json({
+          message: "Login successful",
+          userId: company.id,
+          token,
+          username: company.name,
+          email: company.email,
+          userType: "company",
+        });
+      } else {
+        return res
+          .status(401)
+          .json({
+            error:
+              "Your account is being reviewed by the admin. You will be notified if the admin approves your request",
+          });
+      }
     }
 
     // Check against admin table
@@ -351,7 +363,6 @@ app.post("/searchTrips", async (req, res) => {
   try {
     let whereClause = {};
 
-
     if (searchQuery.tripType) {
       whereClause.type = { equals: searchQuery.tripType };
     }
@@ -378,7 +389,6 @@ app.post("/searchTrips", async (req, res) => {
     res.status(500).json({ error: "Failed to search trips" });
   }
 });
-
 
 // Fetch Trips route
 app.get("/trips", async (req, res) => {
