@@ -23,6 +23,7 @@ model Company {
   userType String
   name     String
   email    String   @unique
+  phoneNumber String   @default("")
   password String
   location String
   website  String?
@@ -31,7 +32,6 @@ model Company {
   ranking  String?
   approved Boolean    @default(false)
   safras   Trip[]
-
 }
 
 model Customer {
