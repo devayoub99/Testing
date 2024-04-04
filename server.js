@@ -25,11 +25,10 @@ app.post("/register", async (req, res) => {
     username,
     email,
     password,
-    location,
+    country,
     website,
     logo,
     companyDocs,
-    testingadsfasdf,
   } = req.body;
 
   console.log("Received registration request:", {
@@ -37,7 +36,7 @@ app.post("/register", async (req, res) => {
     username,
     email,
     password,
-    location,
+    country,
     website,
     logo,
     companyDocs,
@@ -62,10 +61,10 @@ app.post("/register", async (req, res) => {
       newUser = await prisma.company.create({
         data: {
           userType,
-          name: username, // Use 'name' for the company's name
+          username,
           email,
           password: hashedPassword,
-          location,
+          country,
           website,
           logo,
           docs: companyDocs,
@@ -140,7 +139,7 @@ app.post("/login", async (req, res) => {
           message: "Login successful",
           userId: company.id,
           token,
-          username: company.name,
+          username: company.username,
           email: company.email,
           userType: "company",
         });
@@ -186,11 +185,12 @@ app.post("/login", async (req, res) => {
 app.patch("/editUser", async (req, res) => {
   const { userType, userId } = req.body;
   const newData = req.body;
-  console.log("THe request body", req.body);
+
+  console.log("The request body", req.body);
   try {
-    let updatedUser;
+    let updatedData;
     if (userType === "customer") {
-      updatedUser = await prisma.customer.update({
+      updatedData = await prisma.customer.update({
         where: { id: parseInt(userId) },
         data: {
           username: newData.username,
@@ -199,46 +199,34 @@ app.patch("/editUser", async (req, res) => {
           day: newData.day,
           month: newData.month,
           year: newData.year,
-          password: newData.password,
+          country: newData.country,
+          city: newData.city,
+          address: newData.address,
         },
       });
-      // console.log("REQ BODY: ", req.body);
-    } else if (userType === "admin") {
-      updatedUser = await prisma.admin.update({
-        where: { id: parseInt(userId) },
-        data: {
-          username: newData.username,
-          email: newData.email,
-          phoneNumber: newData.phoneNumber,
-          day: newData.day,
-          month: newData.month,
-          year: newData.year,
-          password: newData.password,
-        },
-      });
-      // console.log("ADMIN");
     } else if (userType === "company") {
-      updatedUser = await prisma.company.update({
+      updatedData = await prisma.company.update({
         where: { id: parseInt(userId) },
         data: {
-          name: newData.firstName,
+          username: newData.username,
           email: newData.email,
-          password: newData.password,
-          location: newData.location,
+          phoneNumber: newData.phoneNumber,
+          country: newData.country,
+          city: newData.city,
+          address: newData.address,
           website: newData.website,
           logo: newData.logo,
           docs: newData.docs,
         },
       });
-      // console.log("COMPANY");
     } else {
       return res.status(400).json({ error: "Invalid user type" });
     }
-    console.log("User updated:", updatedUser);
-    res.status(200).json(updatedUser);
+    console.log("User updated:", updatedData);
+    res.status(200).json(updatedData);
   } catch (error) {
     console.error("Failed to update user:", error);
-    res.status(500).json({ error: "Failed to update user" });
+    res.status(500).json({ error: "Failed to update user" }); // Sending a 500 status code for server errors
   }
 });
 
@@ -319,8 +307,8 @@ app.delete("/company/:id", async (req, res) => {
 
     res.status(204).send(); // Send a successful response with no content
   } catch (error) {
-    console.error("Failed to delete the company", error);
-    res.status(500).send("Failed to delete the company");
+    console.error("Failed to delete the User", error);
+    res.status(500).send("Failed to delete the User");
   }
 });
 
@@ -527,29 +515,25 @@ app.get("/passengers", async (req, res) => {
 
 app.get("/user/:userId", async (req, res) => {
   const userId = parseInt(req.params.userId);
-  const { userType } = req.body;
-
-  console.log(`Your User type is ${userType}`);
+  const userType = req.query.userType;
   try {
+    let user;
     if (userType === "customer") {
-      updatedUser = await prisma.customer.update({
-        where: { id: parseInt(userId) },
-        data: {
-          username: newData.username,
-          email: newData.email,
-          phoneNumber: newData.phoneNumber,
-          day: newData.day,
-          month: newData.month,
-          year: newData.year,
-          password: newData.password,
-        },
+      user = await prisma.customer.findUnique({
+        where: { id: userId },
       });
-      // console.log("REQ BODY: ", req.body);
+    } else if (userType === "company") {
+      user = await prisma.company.findUnique({
+        where: { id: userId },
+      });
+    } else if (userType === "admin") {
+      user = await prisma.admin.findUnique({
+        where: { id: userId },
+      });
+    } else {
+      return res.status(400).json({ error: "Invalid user type" });
     }
-    // ! STATIC TYPE => it should be dynamic
-    const user = await prisma.customer.findUnique({
-      where: { id: userId },
-    });
+    console.log(user);
 
     if (!user) {
       return res.status(404).json({ error: "User not found" });
@@ -559,6 +543,24 @@ app.get("/user/:userId", async (req, res) => {
   } catch (error) {
     console.error("Error retrieving user data:", error);
     res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+app.delete("/user/:userId", async (req, res) => {
+  const deletedUserId = parseInt(req.params.id);
+  console.log(`Deleted USER IS ${deletedUserId}`);
+
+  try {
+    await prisma.customer.delete({
+      where: {
+        id: deletedUserId,
+      },
+    });
+
+    res.status(204).send(); // Send a successful response with no content
+  } catch (error) {
+    console.error("Failed to delete the company", error);
+    res.status(500).send("Failed to delete the company");
   }
 });
 
