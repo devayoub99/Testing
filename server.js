@@ -483,6 +483,9 @@ app.post("/passenger", async (req, res) => {
       nationality,
       tripId,
     } = req.body;
+
+    console.log(`Passenger data: ${req.body}`);
+
     const passenger = await prisma.passenger.create({
       data: {
         firstName,
@@ -547,20 +550,136 @@ app.get("/user/:userId", async (req, res) => {
 });
 
 app.delete("/user/:userId", async (req, res) => {
-  const deletedUserId = parseInt(req.params.id);
-  console.log(`Deleted USER IS ${deletedUserId}`);
+  const deletedUserId = parseInt(req.params.userId);
+  const userType = req.query.userType;
+  const userPassword = req.query.userPassword;
+
+  let storedPassword;
 
   try {
-    await prisma.customer.delete({
-      where: {
-        id: deletedUserId,
-      },
-    });
+    if (userType === "customer") {
+      const customer = await prisma.customer.findUnique({
+        where: {
+          id: deletedUserId,
+        },
+      });
+      if (!customer) {
+        throw new Error("Customer not found");
+      }
+      storedPassword = customer.password;
+    } else if (userType === "company") {
+      const company = await prisma.company.findUnique({
+        where: {
+          id: deletedUserId,
+        },
+      });
+      if (!company) {
+        throw new Error("Company not found");
+      }
+      storedPassword = company.password;
+    } else if (userType === "admin") {
+      const admin = await prisma.admin.findUnique({
+        where: {
+          id: deletedUserId,
+        },
+      });
+      if (!admin) {
+        throw new Error("Admin not found");
+      }
+      storedPassword = admin.password;
+    } else {
+      throw new Error("Invalid user type");
+    }
 
-    res.status(204).send(); // Send a successful response with no content
+    const isPasswordMatch = await bcrypt.compare(userPassword, storedPassword);
+
+    if (!isPasswordMatch) {
+      throw new Error("Incorrect password");
+    }
+
+    // If password matches and user type is valid, then delete the user
+    if (userType === "customer") {
+      await prisma.customer.delete({
+        where: {
+          id: deletedUserId,
+        },
+      });
+    } else if (userType === "company") {
+      await prisma.company.delete({
+        where: {
+          id: deletedUserId,
+        },
+      });
+    } else if (userType === "admin") {
+      await prisma.admin.delete({
+        where: {
+          id: deletedUserId,
+        },
+      });
+    }
+
+    res.status(204).send();
   } catch (error) {
-    console.error("Failed to delete the company", error);
-    res.status(500).send("Failed to delete the company");
+    console.error("Failed to delete the user", error);
+    res.status(500).send("Failed to delete the user: " + error.message);
+  }
+});
+
+app.post("/user/:userId/changepass", async (req, res) => {
+  const userId = parseInt(req.params.userId);
+  const { passwords, userType } = req.body;
+
+  try {
+    let user;
+    switch (userType) {
+      case "customer":
+        user = await prisma.customer.findUnique({ where: { id: userId } });
+        break;
+      case "company":
+        user = await prisma.company.findUnique({ where: { id: userId } });
+        break;
+      case "admin":
+        user = await prisma.admin.findUnique({ where: { id: userId } });
+        break;
+      default:
+        return res.status(400).json({ error: "Invalid user type" });
+    }
+
+    const isPasswordMatch = await bcrypt.compare(
+      passwords.currentPassword,
+      user.password
+    );
+    if (!isPasswordMatch) {
+      return res.status(400).json({ error: "Current password is incorrect" });
+    }
+
+    const hashedNewPassword = await bcrypt.hash(passwords.newPassword, 10);
+
+    switch (userType) {
+      case "customer":
+        await prisma.customer.update({
+          where: { id: userId },
+          data: { password: hashedNewPassword },
+        });
+        break;
+      case "company":
+        await prisma.company.update({
+          where: { id: userId },
+          data: { password: hashedNewPassword },
+        });
+        break;
+      case "admin":
+        await prisma.admin.update({
+          where: { id: userId },
+          data: { password: hashedNewPassword },
+        });
+        break;
+    }
+
+    res.status(200).json({ message: "Password changed successfully" });
+  } catch (error) {
+    console.error("Error changing password:", error);
+    res.status(500).json({ error: "Failed to change password" });
   }
 });
 
