@@ -25,11 +25,12 @@ app.post("/register", async (req, res) => {
     username,
     email,
     password,
-    location,
+    country,
+    city,
+    address,
     website,
     logo,
     companyDocs,
-    testingadsfasdf,
   } = req.body;
 
   console.log("Received registration request:", {
@@ -37,7 +38,9 @@ app.post("/register", async (req, res) => {
     username,
     email,
     password,
-    location,
+    country,
+    city,
+    address,
     website,
     logo,
     companyDocs,
@@ -62,10 +65,12 @@ app.post("/register", async (req, res) => {
       newUser = await prisma.company.create({
         data: {
           userType,
-          name: username, // Use 'name' for the company's name
+          username,
           email,
           password: hashedPassword,
-          location,
+          country,
+          city,
+          address,
           website,
           logo,
           docs: companyDocs,
@@ -140,7 +145,7 @@ app.post("/login", async (req, res) => {
           message: "Login successful",
           userId: company.id,
           token,
-          username: company.name,
+          username: company.username,
           email: company.email,
           userType: "company",
         });
@@ -186,12 +191,48 @@ app.post("/login", async (req, res) => {
 app.patch("/editUser", async (req, res) => {
   const { userType, userId } = req.body;
   const newData = req.body;
-  console.log("THe request body", req.body);
+
+  console.log("The request body", req.body);
   try {
-    let updatedUser;
+    // let emailExists;
+    // if (userType === "customer") {
+    //   emailExists = await prisma.customer.findFirst({
+    //     where: {
+    //       AND: [
+    //         { email: newData.email },
+    //         {
+    //           NOT: {
+    //             id: userId, // Exclude the current user's ID from the search
+    //           },
+    //         },
+    //       ],
+    //     },
+    //   });
+    // } else if (userType === "company") {
+    //   emailExists = await prisma.company.findFirst({
+    //     where: {
+    //       AND: [
+    //         { email: newData.email },
+    //         {
+    //           NOT: {
+    //             id: userId,
+    //           },
+    //         },
+    //       ],
+    //     },
+    //   });
+    // }
+
+    // if (emailExists) {
+    //   return res
+    //     .status(400)
+    //     .json({ error: "Email is already in use by another account" });
+    // }
+
+    let updatedData;
     if (userType === "customer") {
-      updatedUser = await prisma.customer.update({
-        where: { id: parseInt(userId) },
+      updatedData = await prisma.customer.update({
+        where: { id: userId },
         data: {
           username: newData.username,
           email: newData.email,
@@ -199,43 +240,31 @@ app.patch("/editUser", async (req, res) => {
           day: newData.day,
           month: newData.month,
           year: newData.year,
-          password: newData.password,
+          country: newData.country,
+          city: newData.city,
+          address: newData.address,
         },
       });
-      // console.log("REQ BODY: ", req.body);
-    } else if (userType === "admin") {
-      updatedUser = await prisma.admin.update({
-        where: { id: parseInt(userId) },
-        data: {
-          username: newData.username,
-          email: newData.email,
-          phoneNumber: newData.phoneNumber,
-          day: newData.day,
-          month: newData.month,
-          year: newData.year,
-          password: newData.password,
-        },
-      });
-      // console.log("ADMIN");
     } else if (userType === "company") {
-      updatedUser = await prisma.company.update({
-        where: { id: parseInt(userId) },
+      updatedData = await prisma.company.update({
+        where: { id: userId },
         data: {
-          name: newData.firstName,
+          username: newData.username,
           email: newData.email,
-          password: newData.password,
-          location: newData.location,
+          phoneNumber: newData.phoneNumber,
+          country: newData.country,
+          city: newData.city,
+          address: newData.address,
           website: newData.website,
           logo: newData.logo,
           docs: newData.docs,
         },
       });
-      // console.log("COMPANY");
     } else {
       return res.status(400).json({ error: "Invalid user type" });
     }
-    console.log("User updated:", updatedUser);
-    res.status(200).json(updatedUser);
+    console.log("User updated:", updatedData);
+    res.status(200).json(updatedData);
   } catch (error) {
     console.error("Failed to update user:", error);
     res.status(500).json({ error: "Failed to update user" });
@@ -283,7 +312,7 @@ app.get("/company", async (req, res) => {
     const companyId = req.headers.id;
     const company = await prisma.company.findUnique({
       where: {
-        id: parseInt(companyId),
+        id: companyId,
       },
     });
     res.status(200).json(company);
@@ -297,7 +326,7 @@ app.patch("/company", async (req, res) => {
   try {
     const companyId = req.headers.id;
     const updatedCompany = await prisma.company.update({
-      where: { id: parseInt(companyId) },
+      where: { id: companyId },
       data: { approved: true },
     });
     res.status(200).json(updatedCompany);
@@ -313,14 +342,14 @@ app.delete("/company/:id", async (req, res) => {
   try {
     await prisma.company.delete({
       where: {
-        id: parseInt(companyId),
+        id: companyId,
       },
     });
 
     res.status(204).send(); // Send a successful response with no content
   } catch (error) {
-    console.error("Failed to delete the company", error);
-    res.status(500).send("Failed to delete the company");
+    console.error("Failed to delete the User", error);
+    res.status(500).send("Failed to delete the User");
   }
 });
 
@@ -466,7 +495,7 @@ app.get("/trip", async (req, res) => {
     const tripId = req.headers.id;
     const trip = await prisma.trip.findUnique({
       where: {
-        id: parseInt(tripId),
+        id: tripId,
       },
       include: {
         programme: true, // Include related SafraProgramme entries
@@ -495,6 +524,9 @@ app.post("/passenger", async (req, res) => {
       nationality,
       tripId,
     } = req.body;
+
+    console.log(`Passenger data: ${req.body}`);
+
     const passenger = await prisma.passenger.create({
       data: {
         firstName,
@@ -526,30 +558,26 @@ app.get("/passengers", async (req, res) => {
 });
 
 app.get("/user/:userId", async (req, res) => {
-  const userId = parseInt(req.params.userId);
-  const { userType } = req.body;
-
-  console.log(`Your User type is ${userType}`);
+  const userId = req.params.userId;
+  const userType = req.query.userType;
   try {
+    let user;
     if (userType === "customer") {
-      updatedUser = await prisma.customer.update({
-        where: { id: parseInt(userId) },
-        data: {
-          username: newData.username,
-          email: newData.email,
-          phoneNumber: newData.phoneNumber,
-          day: newData.day,
-          month: newData.month,
-          year: newData.year,
-          password: newData.password,
-        },
+      user = await prisma.customer.findUnique({
+        where: { id: userId },
       });
-      // console.log("REQ BODY: ", req.body);
+    } else if (userType === "company") {
+      user = await prisma.company.findUnique({
+        where: { id: userId },
+      });
+    } else if (userType === "admin") {
+      user = await prisma.admin.findUnique({
+        where: { id: userId },
+      });
+    } else {
+      return res.status(400).json({ error: "Invalid user type" });
     }
-    // ! STATIC TYPE => it should be dynamic
-    const user = await prisma.customer.findUnique({
-      where: { id: userId },
-    });
+    console.log(user);
 
     if (!user) {
       return res.status(404).json({ error: "User not found" });
@@ -559,6 +587,141 @@ app.get("/user/:userId", async (req, res) => {
   } catch (error) {
     console.error("Error retrieving user data:", error);
     res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+app.delete("/user/:userId", async (req, res) => {
+  const deletedUserId = req.params.userId;
+  const userType = req.query.userType;
+  const userPassword = req.query.userPassword;
+
+  let storedPassword;
+
+  try {
+    if (userType === "customer") {
+      const customer = await prisma.customer.findUnique({
+        where: {
+          id: deletedUserId,
+        },
+      });
+      if (!customer) {
+        throw new Error("Customer not found");
+      }
+      storedPassword = customer.password;
+    } else if (userType === "company") {
+      const company = await prisma.company.findUnique({
+        where: {
+          id: deletedUserId,
+        },
+      });
+      if (!company) {
+        throw new Error("Company not found");
+      }
+      storedPassword = company.password;
+    } else if (userType === "admin") {
+      const admin = await prisma.admin.findUnique({
+        where: {
+          id: deletedUserId,
+        },
+      });
+      if (!admin) {
+        throw new Error("Admin not found");
+      }
+      storedPassword = admin.password;
+    } else {
+      throw new Error("Invalid user type");
+    }
+
+    const isPasswordMatch = await bcrypt.compare(userPassword, storedPassword);
+
+    if (!isPasswordMatch) {
+      throw new Error("Incorrect password");
+    }
+
+    // If password matches and user type is valid, then delete the user
+    if (userType === "customer") {
+      await prisma.customer.delete({
+        where: {
+          id: deletedUserId,
+        },
+      });
+    } else if (userType === "company") {
+      await prisma.company.delete({
+        where: {
+          id: deletedUserId,
+        },
+      });
+    } else if (userType === "admin") {
+      await prisma.admin.delete({
+        where: {
+          id: deletedUserId,
+        },
+      });
+    }
+
+    res.status(204).send();
+  } catch (error) {
+    console.error("Failed to delete the user", error);
+    res.status(500).send("Failed to delete the user: " + error.message);
+  }
+});
+
+app.post("/user/:userId/changepass", async (req, res) => {
+  const userId = req.params.userId;
+  const { passwords, userType } = req.body;
+
+  try {
+    let user;
+    switch (userType) {
+      case "customer":
+        user = await prisma.customer.findUnique({ where: { id: userId } });
+        break;
+      case "company":
+        user = await prisma.company.findUnique({ where: { id: userId } });
+        console.log(`THE USER IS ${user}`);
+        break;
+      case "admin":
+        user = await prisma.admin.findUnique({ where: { id: userId } });
+        break;
+      default:
+        return res.status(400).json({ error: "Invalid user type" });
+    }
+
+    const isPasswordMatch = await bcrypt.compare(
+      passwords.currentPassword,
+      user.password
+    );
+    if (!isPasswordMatch) {
+      return res.status(400).json({ error: "Current password is incorrect" });
+    }
+
+    const hashedNewPassword = await bcrypt.hash(passwords.newPassword, 10);
+
+    switch (userType) {
+      case "customer":
+        await prisma.customer.update({
+          where: { id: userId },
+          data: { password: hashedNewPassword },
+        });
+        break;
+      case "company":
+        await prisma.company.update({
+          where: { id: userId },
+          data: { password: hashedNewPassword },
+        });
+        break;
+      case "admin":
+        await prisma.admin.update({
+          where: { id: userId },
+          data: { password: hashedNewPassword },
+        });
+        break;
+    }
+
+    res.status(200).json({ message: "Password changed successfully" });
+  } catch (error) {
+    console.error("Error changing password:", error);
+    res.status(500).json({ error: "Failed to change password" });
   }
 });
 
