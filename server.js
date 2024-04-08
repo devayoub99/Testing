@@ -26,6 +26,8 @@ app.post("/register", async (req, res) => {
     email,
     password,
     country,
+    city,
+    address,
     website,
     logo,
     companyDocs,
@@ -37,6 +39,8 @@ app.post("/register", async (req, res) => {
     email,
     password,
     country,
+    city,
+    address,
     website,
     logo,
     companyDocs,
@@ -65,6 +69,8 @@ app.post("/register", async (req, res) => {
           email,
           password: hashedPassword,
           country,
+          city,
+          address,
           website,
           logo,
           docs: companyDocs,
@@ -188,10 +194,45 @@ app.patch("/editUser", async (req, res) => {
 
   console.log("The request body", req.body);
   try {
+    // let emailExists;
+    // if (userType === "customer") {
+    //   emailExists = await prisma.customer.findFirst({
+    //     where: {
+    //       AND: [
+    //         { email: newData.email },
+    //         {
+    //           NOT: {
+    //             id: userId, // Exclude the current user's ID from the search
+    //           },
+    //         },
+    //       ],
+    //     },
+    //   });
+    // } else if (userType === "company") {
+    //   emailExists = await prisma.company.findFirst({
+    //     where: {
+    //       AND: [
+    //         { email: newData.email },
+    //         {
+    //           NOT: {
+    //             id: userId,
+    //           },
+    //         },
+    //       ],
+    //     },
+    //   });
+    // }
+
+    // if (emailExists) {
+    //   return res
+    //     .status(400)
+    //     .json({ error: "Email is already in use by another account" });
+    // }
+
     let updatedData;
     if (userType === "customer") {
       updatedData = await prisma.customer.update({
-        where: { id: parseInt(userId) },
+        where: { id: userId },
         data: {
           username: newData.username,
           email: newData.email,
@@ -206,7 +247,7 @@ app.patch("/editUser", async (req, res) => {
       });
     } else if (userType === "company") {
       updatedData = await prisma.company.update({
-        where: { id: parseInt(userId) },
+        where: { id: userId },
         data: {
           username: newData.username,
           email: newData.email,
@@ -226,7 +267,7 @@ app.patch("/editUser", async (req, res) => {
     res.status(200).json(updatedData);
   } catch (error) {
     console.error("Failed to update user:", error);
-    res.status(500).json({ error: "Failed to update user" }); // Sending a 500 status code for server errors
+    res.status(500).json({ error: "Failed to update user" });
   }
 });
 
@@ -271,7 +312,7 @@ app.get("/company", async (req, res) => {
     const companyId = req.headers.id;
     const company = await prisma.company.findUnique({
       where: {
-        id: parseInt(companyId),
+        id: companyId,
       },
     });
     res.status(200).json(company);
@@ -285,7 +326,7 @@ app.patch("/company", async (req, res) => {
   try {
     const companyId = req.headers.id;
     const updatedCompany = await prisma.company.update({
-      where: { id: parseInt(companyId) },
+      where: { id: companyId },
       data: { approved: true },
     });
     res.status(200).json(updatedCompany);
@@ -301,7 +342,7 @@ app.delete("/company/:id", async (req, res) => {
   try {
     await prisma.company.delete({
       where: {
-        id: parseInt(companyId),
+        id: companyId,
       },
     });
 
@@ -454,7 +495,7 @@ app.get("/trip", async (req, res) => {
     const tripId = req.headers.id;
     const trip = await prisma.trip.findUnique({
       where: {
-        id: parseInt(tripId),
+        id: tripId,
       },
       include: {
         programme: true, // Include related SafraProgramme entries
@@ -517,7 +558,7 @@ app.get("/passengers", async (req, res) => {
 });
 
 app.get("/user/:userId", async (req, res) => {
-  const userId = parseInt(req.params.userId);
+  const userId = req.params.userId;
   const userType = req.query.userType;
   try {
     let user;
@@ -550,7 +591,7 @@ app.get("/user/:userId", async (req, res) => {
 });
 
 app.delete("/user/:userId", async (req, res) => {
-  const deletedUserId = parseInt(req.params.userId);
+  const deletedUserId = req.params.userId;
   const userType = req.query.userType;
   const userPassword = req.query.userPassword;
 
@@ -626,7 +667,7 @@ app.delete("/user/:userId", async (req, res) => {
 });
 
 app.post("/user/:userId/changepass", async (req, res) => {
-  const userId = parseInt(req.params.userId);
+  const userId = req.params.userId;
   const { passwords, userType } = req.body;
 
   try {
@@ -637,6 +678,7 @@ app.post("/user/:userId/changepass", async (req, res) => {
         break;
       case "company":
         user = await prisma.company.findUnique({ where: { id: userId } });
+        console.log(`THE USER IS ${user}`);
         break;
       case "admin":
         user = await prisma.admin.findUnique({ where: { id: userId } });

@@ -10,7 +10,7 @@ datasource db {
 }
 
 model SuperAdmin {
-  id           Int      @id @default(autoincrement())
+  id           String   @id @default(uuid())
   userType     String
   username     String
   email        String   @unique
@@ -18,7 +18,7 @@ model SuperAdmin {
 }
 
 model Admin {
-  id           Int      @id @default(autoincrement())
+  id           String   @id @default(uuid())
   userType     String
   username     String
   email        String   @unique
@@ -26,7 +26,7 @@ model Admin {
 }
 
 model Company {
-  id           Int      @id @default(autoincrement())
+  id           String   @id @default(uuid())
   userType     String
   username     String
   email        String   @unique
@@ -44,7 +44,7 @@ model Company {
 }
 
 model Customer {
-  id           Int      @id @default(autoincrement())
+  id           String   @id @default(uuid())
   userType     String
   username     String
   email        String   @unique
@@ -53,7 +53,7 @@ model Customer {
   day          String   @default("")
   month        String   @default("")
   year         String   @default("")
-  country      String   @default("Iraq")
+  country      String   @default("")
   city         String   @default("")
   address      String   @default("")
   safras       Trip[]
@@ -61,19 +61,19 @@ model Customer {
 
 
 model Programme {
-  id        Int      @id @default(autoincrement())
+  id        String   @id @default(uuid())
   dayNum    Int
   program   String @db.Text 
   safra     Trip[] 
 }
 
 model Trip {
-  id        Int      @id @default(autoincrement())
+  id        String   @id @default(uuid())
   name      String
   desc      String @db.Text
   dateFrom  DateTime
   dateTo    DateTime
-  companyId Int?
+  companyId String?
   price     String
   company   Company? @relation(fields: [companyId], references: [id])
   customers Customer[]
@@ -85,7 +85,7 @@ model Trip {
 }
 
 model Passenger {
-  id              Int      @id @default(autoincrement())
+  id              String   @id @default(uuid())
   firstName       String
   middleName      String
   lastName        String
@@ -95,7 +95,7 @@ model Passenger {
   day             String
   month           String
   year            String
-  country         String   @default("Iraq")
+  country         String   @default("")
   city            String   @default("")
   address         String   @default("")
   nationality     String
