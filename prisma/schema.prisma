@@ -9,45 +9,99 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model SuperAdmin {
+  id           String   @id @default(uuid())
+  userType     String
+  username     String
+  email        String   @unique
+  password     String
+}
+
 model Admin {
-  id       Int      @id @default(autoincrement())
-  username String
-  email    String @unique
-  password String
-  // Other admin-specific fields
+  id           String   @id @default(uuid())
+  userType     String
+  username     String
+  email        String   @unique
+  password     String
 }
 
 model Company {
-  id       Int      @id @default(autoincrement())
-  name     String
-  email    String   @unique
-  password String
-  // Other company-specific fields
-  safras Safra[]
+  id           String   @id @default(uuid())
+  userType     String
+  username     String
+  email        String   @unique
+  phoneNumber  String   @default("")
+  password     String
+  country      String   @default("")
+  city         String   @default("")
+  address      String   @default("")
+  website      String?
+  logo         String?
+  docs         String?
+  ranking      String?
+  approved     Boolean  @default(false)
+  safras       Trip[]
 }
 
 model Customer {
-  id       Int      @id @default(autoincrement())
-  username String
-  email    String @unique
-  password String
-  // Other customer-specific fields
-  safras Safra[] // Customers can view and buy multiple safras
+  id           String   @id @default(uuid())
+  userType     String
+  username     String
+  email        String   @unique
+  password     String
+  phoneNumber  String   @default("")
+  day          String   @default("")
+  month        String   @default("")
+  year         String   @default("")
+  country      String   @default("")
+  city         String   @default("")
+  address      String   @default("")
+  safras       Trip[]
 }
 
-model Safra {
-  id        Int      @id @default(autoincrement())
+
+model Programme {
+  id        String   @id @default(uuid())
+  dayNum    Int
+  program   String @db.Text 
+  safra     Trip[] 
+}
+
+model Trip {
+  id        String   @id @default(uuid())
   name      String
-  companyId Int?
-  company   Company? @relation(fields: [companyId], references: [id])
-  customers Customer[]
+  desc      String @db.Text
   dateFrom  DateTime
   dateTo    DateTime
+  companyId String?
+  price     String
+  company   Company? @relation(fields: [companyId], references: [id])
+  customers Customer[]
   type      String
-  programme String
-  offer     String
-  ranking   String
-  // Other safra-specific fields
+  programme Programme[]
+  fromLocation String
+  destination String
+  offer     String? @db.Text
 }
+
+model Passenger {
+  id              String   @id @default(uuid())
+  firstName       String
+  middleName      String
+  lastName        String
+  email           String
+  phoneNumber     String
+  gender          String
+  day             String
+  month           String
+  year            String
+  country         String   @default("")
+  city            String   @default("")
+  address         String   @default("")
+  nationality     String
+  passportNumber  String
+  tripId          String
+}
+
 
 
