@@ -1,74 +1,60 @@
-// functions/register.js
-const express = require('express');
-const serverless = require('serverless-http');
-const bodyParser = require('body-parser');
-const { PrismaClient } = require('@prisma/client');
-const bcrypt = require('bcryptjs');
+// inanna-backend/functions/register.js
+const { PrismaClient } = require("@prisma/client");
+const bcrypt = require("bcryptjs");
 
 const prisma = new PrismaClient();
-const app = express();
-app.use(bodyParser.json());
 
-// CORS middleware
-app.use((req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000'); // Replace with your frontend domain
-  res.setHeader('Access-Control-Allow-Methods', 'OPTIONS, POST');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
-  next();
-});
+exports.handler = async (event) => {
+  const { userType, username, email, password, country, city, address, website, logo, companyDocs } = JSON.parse(event.body);
 
-app.post('/.netlify/functions/register', async (req, res) => {
+  // Hash the password before storing it
+  const hashedPassword = await bcrypt.hash(password, 10);
+
   try {
-    const { userType, username, email, password } = req.body;
-
-    // Check if the email is already registered
-    const existingUser = await prisma.customer.findUnique({ where: { email } });
-    if (existingUser) {
-      return res.status(400).json({ error: 'Email is already registered.' });
-    }
-
-    // Hash the password
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Create a new user based on userType
     let newUser;
-    if (userType === 'admin') {
-      newUser = await prisma.admin.create({
+
+    if (userType === "customer") {
+      newUser = await prisma.customer.create({
         data: {
+          userType,
           username,
           email,
           password: hashedPassword,
         },
       });
-    } else if (userType === 'company') {
+    } else if (userType === "company") {
       newUser = await prisma.company.create({
         data: {
-          name: username,
+          userType,
+          username,
           email,
           password: hashedPassword,
+          country,
+          city,
+          address,
+          website,
+          logo,
+          docs: companyDocs,
         },
       });
-    } else if (userType === 'customer') {
-      newUser = await prisma.customer.create({
+    } else if (userType === "admin") {
+      newUser = await prisma.admin.create({
         data: {
+          userType,
           username,
           email,
           password: hashedPassword,
         },
       });
     } else {
-      return res.status(400).json({ error: 'Invalid userType.' });
+      console.error("Invalid userType:", userType);
+      return { statusCode: 400, body: JSON.stringify({ error: "Invalid user type" }) };
     }
 
-    return res.status(201).json({ message: 'Registration successful', user: newUser });
+    console.log("Registration successful:", userType, newUser);
+    return { statusCode: 201, body: JSON.stringify(newUser) };
   } catch (error) {
-    console.error('Error during registration:', error);
-    return res.status(500).json({ error: 'Internal server error' });
+    console.error("Registration failed:", error);
+    return { statusCode: 500, body: JSON.stringify({ error: "Registration failed" }) };
   }
-});
-
-module.exports = app;
-module.exports.handler = serverless(app);
+};
