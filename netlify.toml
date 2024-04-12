@@ -1,49 +1,13 @@
 [build]
-  command = "yarn install && yarn build"
+  command = "yarn install && yarn prisma:generate && yarn migrate"
   functions = "functions"
-  publish = "dist"
+  publish = "functions"
 
-  
-[functions]
 
-  [functions.register]
-  external_node_modules = [
-    "module-one",
-    "module-two"
-  ]
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Access-Control-Allow-Origin = "*"
+    Access-Control-Allow-Headers = "*"
+    Access-Control-Allow-Methods = "GET, POST, PUT, DELETE, OPTIONS"
 
-[functions.login]
-  external_node_modules = [
-    "module-one",
-    "module-two"
-  ]
-
-[functions.logout]
-  external_node_modules = [
-    "module-one",
-    "module-two"
-  ]
-
-[functions.fetchUsers]
-  external_node_modules = [
-    "module-one",
-    "module-two"
-  ]
-
-[functions.fetchCompanies]
-  external_node_modules = [
-    "module-one",
-    "module-two"
-  ]
-
-[functions.fetchProducts]
-  external_node_modules = [
-    "module-one",
-    "module-two"
-  ]
-
-[functions.createProduct]
-  external_node_modules = [
-    "module-one",
-    "module-two"
-  ]
