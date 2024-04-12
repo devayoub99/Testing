@@ -4,8 +4,9 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "build": "babel src -d dist",
-    "prestart": "yarn build"
+    "migrate": "npx prisma migrate deploy",
+    "prestart": "yarn prisma:generate",
+    "prisma:generate": "prisma generate"
   },
   "dependencies": {
     "@babel/cli": "^7.23.9",
