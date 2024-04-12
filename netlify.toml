@@ -1,0 +1,13 @@
+[build]
+  command = "yarn install && yarn start"
+  functions = "functions"
+  publish = "functions"
+
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Access-Control-Allow-Origin = "*"
+    Access-Control-Allow-Headers = "*"
+    Access-Control-Allow-Methods = "GET, POST, PUT, DELETE, OPTIONS"
+
