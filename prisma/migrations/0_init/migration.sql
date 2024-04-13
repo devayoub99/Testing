@@ -142,3 +142,4 @@ ALTER TABLE `_ProgrammeToTrip` ADD CONSTRAINT `_ProgrammeToTrip_A_fkey` FOREIGN 
 
 -- AddForeignKey
 ALTER TABLE `_ProgrammeToTrip` ADD CONSTRAINT `_ProgrammeToTrip_B_fkey` FOREIGN KEY (`B`) REFERENCES `Trip`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
