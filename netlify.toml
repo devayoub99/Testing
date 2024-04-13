@@ -1,5 +1,7 @@
+# This is a comment in netlify.toml
 [build]
-  command = "yarn install && yarn prisma:generate && yarn migrate"
+  # command = "yarn install && yarn prisma:generate && yarn migrate"
+  command = "yarn && yarn prisma:generate && yarn prisma migrate deploy"
   functions = "functions"
   publish = "functions"
 
