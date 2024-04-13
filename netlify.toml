@@ -5,7 +5,6 @@
   functions = "functions"
   publish = "functions"
 
-
 [[headers]]
   for = "/*"
   [headers.values]
