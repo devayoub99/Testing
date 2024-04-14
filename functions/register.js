@@ -46,7 +46,7 @@ app.post('/.netlify/functions/register', async (req, res) => {
     } else if (userType === 'company') {
       newUser = await prisma.company.create({
         data: {
-          name: username,
+          username,
           email,
           password: hashedPassword,
         },
