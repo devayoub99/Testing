@@ -106,6 +106,7 @@ CREATE TABLE `Passenger` (
     `nationality` VARCHAR(191) NOT NULL,
     `passportNumber` VARCHAR(191) NOT NULL,
     `tripId` VARCHAR(191) NOT NULL,
+    `test` VARCHAR(191) NOT NULL,
 
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -142,4 +143,3 @@ ALTER TABLE `_ProgrammeToTrip` ADD CONSTRAINT `_ProgrammeToTrip_A_fkey` FOREIGN 
 
 -- AddForeignKey
 ALTER TABLE `_ProgrammeToTrip` ADD CONSTRAINT `_ProgrammeToTrip_B_fkey` FOREIGN KEY (`B`) REFERENCES `Trip`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
-
