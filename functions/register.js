@@ -22,7 +22,18 @@ app.use((req, res, next) => {
 
 app.post('/.netlify/functions/register', async (req, res) => {
   try {
-    const { userType, username, email, password } = req.body;
+    const { 
+      userType,
+      username,
+      email,
+      password,
+      country,
+      city,
+      address,
+      website,
+      logo,
+      companyDocs, 
+    } = req.body;
 
     // Check if the email is already registered
     const existingUser = await prisma.customer.findUnique({ where: { email } });
@@ -38,6 +49,7 @@ app.post('/.netlify/functions/register', async (req, res) => {
     if (userType === 'admin') {
       newUser = await prisma.admin.create({
         data: {
+          userType,
           username,
           email,
           password: hashedPassword,
@@ -61,6 +73,7 @@ app.post('/.netlify/functions/register', async (req, res) => {
     } else if (userType === 'customer') {
       newUser = await prisma.customer.create({
         data: {
+          userType,
           username,
           email,
           password: hashedPassword,
