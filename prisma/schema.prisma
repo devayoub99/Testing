@@ -100,5 +100,4 @@ model Passenger {
   nationality    String
   passportNumber String
   tripId         String
-  test           String
 }

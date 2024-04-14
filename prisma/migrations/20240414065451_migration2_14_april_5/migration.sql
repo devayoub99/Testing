@@ -106,11 +106,6 @@ CREATE TABLE `Passenger` (
     `nationality` VARCHAR(191) NOT NULL,
     `passportNumber` VARCHAR(191) NOT NULL,
     `tripId` VARCHAR(191) NOT NULL,
-    `test` VARCHAR(191) NOT NULL,
-<<<<<<<< HEAD:prisma/migrations/20240414063018_ayoub/migration.sql
-========
-    `testtest` VARCHAR(191) NOT NULL,
->>>>>>>> 73ce865 (migration bug trial -1):prisma/migrations/20240414064301_migration2_14_april/migration.sql
 
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
