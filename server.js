@@ -207,7 +207,7 @@ app.post("/logout", (req, res) => {
 
 
 // Fetch users route
-app.get("/users", async (req, res) => {
+app.get("/fetchUsers", async (req, res) => {
   try {
     const customers = await prisma.customer.findMany();
     const companies = await prisma.company.findMany();
@@ -225,7 +225,7 @@ app.get("/users", async (req, res) => {
 
 
 // Fetch companies route
-app.get("/companies", async (req, res) => {
+app.get("/fetchCompanies", async (req, res) => {
   try {
     const companies = await prisma.company.findMany();
     res.status(200).json(companies);
@@ -238,7 +238,7 @@ app.get("/companies", async (req, res) => {
 
 
 // Fetch one company route
-app.get("/company", async (req, res) => {
+app.get("/fetchOneCompany", async (req, res) => {
   try {
     const companyId = req.headers.id;
     const company = await prisma.company.findUnique({
