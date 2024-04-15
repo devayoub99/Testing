@@ -1,4 +1,5 @@
-// functions/fetchUsers.js
+// functions/fetchCompanies.js
+
 const express = require('express');
 const serverless = require('serverless-http');
 const { PrismaClient } = require('@prisma/client');
@@ -14,16 +15,13 @@ app.use((req, res, next) => {
   next();
 });
 
-app.get('/.netlify/functions/fetchUsers', async (req, res) => {
+app.get('/.netlify/functions/fetchCompanies', async (req, res) => {
   try {
-    const customers = await prisma.customer.findMany();
     const companies = await prisma.company.findMany();
-    const admins = await prisma.admin.findMany();
-
-    res.status(200).json({ customer: customers, company: companies, admin: admins });
+    res.status(200).json(companies);
   } catch (error) {
-    console.error('Failed to fetch users:', error);
-    res.status(500).json({ error: 'Failed to fetch users' });
+    console.error('Failed to fetch companies:', error);
+    res.status(500).json({ error: 'Failed to fetch companies' });
   }
 });
 
