@@ -98,6 +98,13 @@ app.post("/register", async (req, res) => {
   }
 });
 
+
+
+
+
+
+
+
 // Login route
 app.post("/login", async (req, res) => {
   const { email, password } = req.body;
@@ -187,89 +194,6 @@ app.post("/login", async (req, res) => {
   }
 });
 
-// Edit user route
-app.patch("/editUser", async (req, res) => {
-  const { userType, userId } = req.body;
-  const newData = req.body;
-
-  console.log("The request body", req.body);
-  try {
-    // let emailExists;
-    // if (userType === "customer") {
-    //   emailExists = await prisma.customer.findFirst({
-    //     where: {
-    //       AND: [
-    //         { email: newData.email },
-    //         {
-    //           NOT: {
-    //             id: userId, // Exclude the current user's ID from the search
-    //           },
-    //         },
-    //       ],
-    //     },
-    //   });
-    // } else if (userType === "company") {
-    //   emailExists = await prisma.company.findFirst({
-    //     where: {
-    //       AND: [
-    //         { email: newData.email },
-    //         {
-    //           NOT: {
-    //             id: userId,
-    //           },
-    //         },
-    //       ],
-    //     },
-    //   });
-    // }
-
-    // if (emailExists) {
-    //   return res
-    //     .status(400)
-    //     .json({ error: "Email is already in use by another account" });
-    // }
-
-    let updatedData;
-    if (userType === "customer") {
-      updatedData = await prisma.customer.update({
-        where: { id: userId },
-        data: {
-          username: newData.username,
-          email: newData.email,
-          phoneNumber: newData.phoneNumber,
-          day: newData.day,
-          month: newData.month,
-          year: newData.year,
-          country: newData.country,
-          city: newData.city,
-          address: newData.address,
-        },
-      });
-    } else if (userType === "company") {
-      updatedData = await prisma.company.update({
-        where: { id: userId },
-        data: {
-          username: newData.username,
-          email: newData.email,
-          phoneNumber: newData.phoneNumber,
-          country: newData.country,
-          city: newData.city,
-          address: newData.address,
-          website: newData.website,
-          logo: newData.logo,
-          docs: newData.docs,
-        },
-      });
-    } else {
-      return res.status(400).json({ error: "Invalid user type" });
-    }
-    console.log("User updated:", updatedData);
-    res.status(200).json(updatedData);
-  } catch (error) {
-    console.error("Failed to update user:", error);
-    res.status(500).json({ error: "Failed to update user" });
-  }
-});
 
 // Logout route (optional)
 app.post("/logout", (req, res) => {
@@ -279,6 +203,8 @@ app.post("/logout", (req, res) => {
   console.log("Logout successful");
   res.status(200).json({ message: "Logout successful" });
 });
+
+
 
 // Fetch users route
 app.get("/users", async (req, res) => {
@@ -296,6 +222,8 @@ app.get("/users", async (req, res) => {
   }
 });
 
+
+
 // Fetch companies route
 app.get("/companies", async (req, res) => {
   try {
@@ -307,6 +235,9 @@ app.get("/companies", async (req, res) => {
   }
 });
 
+
+
+// Fetch one company route
 app.get("/company", async (req, res) => {
   try {
     const companyId = req.headers.id;
@@ -322,6 +253,9 @@ app.get("/company", async (req, res) => {
   }
 });
 
+
+
+// Patch company route
 app.patch("/company", async (req, res) => {
   try {
     const companyId = req.headers.id;
@@ -336,6 +270,9 @@ app.patch("/company", async (req, res) => {
   }
 });
 
+
+
+// Delete company route
 app.delete("/company/:id", async (req, res) => {
   const companyId = req.params.id;
 
@@ -353,41 +290,7 @@ app.delete("/company/:id", async (req, res) => {
   }
 });
 
-// Fetch products route
-// app.get("/products", async (req, res) => {
-//   try {
-//     const products = await prisma.product.findMany({
-//       include: {
-//         company: true, // Include company details in the response
-//       },
-//     });
 
-//     res.status(200).json(products);
-//   } catch (error) {
-//     console.error("Failed to fetch products:", error);
-//     res.status(500).json({ error: "Failed to fetch products" });
-//   }
-// });
-
-// Create product route
-app.post("/products", async (req, res) => {
-  const { name, companyId } = req.body;
-
-  try {
-    const product = await prisma.product.create({
-      data: {
-        name,
-        companyId: companyId, // Update to use companyId
-      },
-    });
-
-    // console.log("Product created:", product);
-    res.status(201).json(product);
-  } catch (error) {
-    console.error("Failed to create product:", error);
-    res.status(500).json({ error: "Failed to create product" });
-  }
-});
 
 // Create Safra route
 app.post("/createTrip", async (req, res) => {
@@ -442,7 +345,10 @@ app.post("/createTrip", async (req, res) => {
   }
 });
 
-// search the trip
+
+
+
+// Search a trip route
 app.post("/searchTrips", async (req, res) => {
   const searchQuery = req.body;
   console.log("Search Query: ", searchQuery);
@@ -477,6 +383,8 @@ app.post("/searchTrips", async (req, res) => {
   }
 });
 
+
+
 // Fetch Trips route
 app.get("/trips", async (req, res) => {
   try {
@@ -489,7 +397,10 @@ app.get("/trips", async (req, res) => {
   }
 });
 
-//  Function to Get ONLY one Trip
+
+
+
+//  Function to Get ONLY one Trip route
 app.get("/trip", async (req, res) => {
   try {
     const tripId = req.headers.id;
@@ -548,6 +459,11 @@ app.post("/passenger", async (req, res) => {
   }
 });
 
+
+
+
+
+// Fetch passengers route
 app.get("/passengers", async (req, res) => {
   try {
     const passengers = await prisma.passenger.findMany();
@@ -557,6 +473,10 @@ app.get("/passengers", async (req, res) => {
   }
 });
 
+
+
+
+// Fetch users route
 app.get("/user/:userId", async (req, res) => {
   const userId = req.params.userId;
   const userType = req.query.userType;
@@ -590,6 +510,12 @@ app.get("/user/:userId", async (req, res) => {
   }
 });
 
+
+
+
+
+
+// Delete user route
 app.delete("/user/:userId", async (req, res) => {
   const deletedUserId = req.params.userId;
   const userType = req.query.userType;
@@ -666,6 +592,11 @@ app.delete("/user/:userId", async (req, res) => {
   }
 });
 
+
+
+
+
+// Change password route
 app.post("/user/:userId/changepass", async (req, res) => {
   const userId = req.params.userId;
   const { passwords, userType } = req.body;
@@ -724,6 +655,9 @@ app.post("/user/:userId/changepass", async (req, res) => {
     res.status(500).json({ error: "Failed to change password" });
   }
 });
+
+
+
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
