@@ -26,58 +26,75 @@ model Admin {
 }
 
 model Company {
-  id          String  @id @default(uuid())
-  userType    String
-  username    String
-  email       String  @unique
-  phoneNumber String  @default("")
-  password    String
-  country     String  @default("")
-  city        String  @default("")
-  address     String  @default("")
-  website     String?
-  logo        String?
-  docs        String?
-  ranking     String?
-  approved    Boolean @default(false)
-  safras      Trip[]
+  id            String   @id @default(uuid())
+  userType      String
+  username      String
+  email         String   @unique
+  phoneNumber   String   @default("")
+  password      String
+  country       String   @default("")
+  city          String   @default("")
+  address       String   @default("")
+  website       String?
+  logo          String?
+  docs          String?
+  ratings       Rating[]
+  averageRating Int      @default(0)
+  totalRatings  Int      @default(0)
+  approved      Boolean  @default(false)
+  frozen        Boolean  @default(false)
+  hidden        Boolean  @default(false)
+  safras        Trip[]
 }
 
+
+
 model Customer {
-  id          String @id @default(uuid())
-  userType    String
-  username    String
-  email       String @unique
-  password    String
-  phoneNumber String @default("")
-  day         String @default("")
-  month       String @default("")
-  year        String @default("")
-  country     String @default("")
-  city        String @default("")
-  address     String @default("")
-  safras      Trip[]
+  id            String   @id @default(uuid())
+  userType      String
+  username      String
+  email         String   @unique
+  password      String
+  phoneNumber   String   @default("")
+  day           String   @default("")
+  month         String   @default("")
+  year          String   @default("")
+  country       String   @default("")
+  city          String   @default("")
+  address       String   @default("")
+  safras        Trip[]
+  ratings       Rating[]
+}
+
+model Rating {
+  id           String   @id @default(uuid())
+  customer     Customer @relation(fields: [customerId], references: [id])
+  company      Company  @relation(fields: [companyId], references: [id])
+  customerId   String
+  companyId    String
+  rating       Int
+  review       String
 }
 
 model Programme {
-  id      String @id @default(uuid())
-  dayNum  Int
-  program String @db.Text
-  safra   Trip[]
+  id        Int   @id @default(autoincrement())
+  dayNum    Int
+  program   String @db.Text 
+  safra     Trip[] 
 }
 
 model Trip {
-  id           String      @id @default(uuid())
-  name         String
-  desc         String      @db.Text
-  dateFrom     DateTime
-  dateTo       DateTime
-  companyId    String?
-  price        String
-  company      Company?    @relation(fields: [companyId], references: [id])
-  customers    Customer[]
-  type         String
-  programme    Programme[]
+  id        String   @id @default(uuid())
+  name      String
+  desc      String @db.Text
+  dateFrom  DateTime
+  dateTo    DateTime
+  companyId String
+  price     String
+  company   Company? @relation(fields: [companyId], references: [id])
+  customers Customer[]
+  type      String
+  programme Programme[]
   fromLocation String
   destination  String
   offer        String?     @db.Text
@@ -100,5 +117,4 @@ model Passenger {
   nationality    String
   passportNumber String
   tripId         String
-  test           String
 }
