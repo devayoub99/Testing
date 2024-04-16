@@ -18,7 +18,6 @@ process.on("unhandledRejection", (reason, promise) => {
   // Application-specific logging, throwing an error, or other logic here
 });
 
-
 // Registration route
 app.post("/register", async (req, res) => {
   const {
@@ -98,8 +97,6 @@ app.post("/register", async (req, res) => {
     res.status(500).json({ error: "Registration failed" });
   }
 });
-
-
 
 // Login route
 app.post("/login", async (req, res) => {
@@ -190,8 +187,6 @@ app.post("/login", async (req, res) => {
   }
 });
 
-
-
 // Edit user route
 app.patch("/editUser", async (req, res) => {
   const { userType, userId } = req.body;
@@ -276,9 +271,7 @@ app.patch("/editUser", async (req, res) => {
   }
 });
 
-
-
-// Logout route
+// Logout route (optional)
 app.post("/logout", (req, res) => {
   // Perform any necessary cleanup on the server side
   // For example, revoke tokens or update session status
@@ -286,7 +279,6 @@ app.post("/logout", (req, res) => {
   console.log("Logout successful");
   res.status(200).json({ message: "Logout successful" });
 });
-
 
 // Fetch users route
 app.get("/users", async (req, res) => {
@@ -304,8 +296,6 @@ app.get("/users", async (req, res) => {
   }
 });
 
-
-
 // Fetch companies route
 app.get("/companies", async (req, res) => {
   try {
@@ -316,7 +306,6 @@ app.get("/companies", async (req, res) => {
     res.status(500).json({ error: "Failed to fetch companies" });
   }
 });
-
 
 // Fetch filtered companies route
 app.get("/companies/:status", async (req, res) => {
@@ -347,8 +336,6 @@ app.get("/companies/:status", async (req, res) => {
   }
 });
 
-
-// Fetch company by id route
 app.get("/company", async (req, res) => {
   try {
     const companyId = req.headers.id;
@@ -369,7 +356,6 @@ app.get("/company", async (req, res) => {
     res.status(500).json({ error: "Failed to fetch Trip" });
   }
 });
-
 
 // Patch company route
 app.patch("/company/:id", async (req, res) => {
@@ -401,11 +387,12 @@ app.patch("/company/:id", async (req, res) => {
   }
 });
 
-
-
 // Delete company route
 app.delete("/company/:id", async (req, res) => {
   const companyId = req.params.id;
+
+  console.log(`COMPANYID: ${companyId}`);
+
   try {
     await prisma.company.delete({
       where: {
@@ -419,8 +406,6 @@ app.delete("/company/:id", async (req, res) => {
     res.status(500).send("Failed to delete the User");
   }
 });
-
-
 
 // * Add feedback to a company route
 app.post("/company/:id/feedback", async (req, res) => {
@@ -489,8 +474,16 @@ app.post("/company/:id/feedback", async (req, res) => {
   }
 });
 
+// Fetch products route
+// app.get("/products", async (req, res) => {
+//   try {
+//     const products = await prisma.product.findMany({
+//       include: {
+//         company: true, // Include company details in the response
+//       },
+//     });
 
-// Create trip route
+// Create Safra route
 app.post("/createTrip", async (req, res) => {
   // console.log(`DATA: ${JSON.stringify(req.body)}`);
   console.log("This is the req body: ", req.body);
@@ -545,7 +538,6 @@ app.post("/createTrip", async (req, res) => {
   }
 });
 
-
 // Search a trip route
 app.post("/searchTrips", async (req, res) => {
   const searchQuery = req.body;
@@ -581,7 +573,6 @@ app.post("/searchTrips", async (req, res) => {
   }
 });
 
-
 // Fetch Trips route
 app.get("/trips", async (req, res) => {
   try {
@@ -593,8 +584,7 @@ app.get("/trips", async (req, res) => {
   }
 });
 
-
-//  Function to Get ONLY one company trips route
+//  Function to Get ONLY one Trip route
 app.get("/company/:id/trips", async (req, res) => {
   const { id } = req.params;
   try {
@@ -609,7 +599,6 @@ app.get("/company/:id/trips", async (req, res) => {
     res.status(500).json({ error: "Failed to fetch trips" });
   }
 });
-
 
 //  Function to Get ONLY one Trip
 app.get("/trip", async (req, res) => {
@@ -631,16 +620,15 @@ app.get("/trip", async (req, res) => {
   }
 });
 
-
 app.delete("/trip/:id", (req, res) => {});
 
-// Function to save passenger route
 app.post("/passenger", async (req, res) => {
   try {
     const {
       firstName,
       middleName,
       lastName,
+      passportNumber,
       email,
       phoneNumber,
       gender,
@@ -651,13 +639,14 @@ app.post("/passenger", async (req, res) => {
       tripId,
     } = req.body;
 
-    console.log(`Passenger data: ${req.body}`);
+    // console.log(`Passenger data: ${req.body}`);
 
     const passenger = await prisma.passenger.create({
       data: {
         firstName,
         middleName,
         lastName,
+        passportNumber,
         email,
         phoneNumber,
         gender,
@@ -674,7 +663,6 @@ app.post("/passenger", async (req, res) => {
   }
 });
 
-
 // Fetch passengers route
 app.get("/passengers", async (req, res) => {
   try {
@@ -684,7 +672,6 @@ app.get("/passengers", async (req, res) => {
     res.status(500).json({ error: "Failed to retrieve passengers" });
   }
 });
-
 
 // Fetch users route
 app.get("/user/:userId", async (req, res) => {
@@ -720,16 +707,11 @@ app.get("/user/:userId", async (req, res) => {
   }
 });
 
-
 // Delete user route
 app.delete("/user/:userId", async (req, res) => {
   const deletedUserId = req.params.userId;
   const userType = req.query.userType;
   const userPassword = req.query.userPassword;
-
-  console.log(`DELETEDUSERID ${deletedUserId}`);
-  console.log(`userType ${userType}`);
-  console.log(`userPassword ${userPassword}`);
 
   let storedPassword;
 
@@ -749,13 +731,37 @@ app.delete("/user/:userId", async (req, res) => {
         where: {
           id: deletedUserId,
         },
+        include: {
+          safras: true, // Include associated trips
+        },
       });
-
-      console.log(`DELETED COMPANY is ${company}`);
       if (!company) {
         throw new Error("Company not found");
       }
       storedPassword = company.password;
+
+      const isPasswordMatch = await bcrypt.compare(userPassword, storedPassword);
+      if (!isPasswordMatch) {
+        throw new Error("Incorrect password");
+      }
+
+      // Delete associated trips only if password is correct
+      await Promise.all(
+        company.safras.map(async (trip) => {
+          await prisma.trip.delete({
+            where: {
+              id: trip.id,
+            },
+          });
+        })
+      );
+
+      // Now delete the company
+      await prisma.company.delete({
+        where: {
+          id: deletedUserId,
+        },
+      });
     } else if (userType === "admin") {
       const admin = await prisma.admin.findUnique({
         where: {
@@ -771,7 +777,6 @@ app.delete("/user/:userId", async (req, res) => {
     }
 
     const isPasswordMatch = await bcrypt.compare(userPassword, storedPassword);
-
     if (!isPasswordMatch) {
       throw new Error("Incorrect password");
     }
@@ -779,12 +784,6 @@ app.delete("/user/:userId", async (req, res) => {
     // If password matches and user type is valid, then delete the user
     if (userType === "customer") {
       await prisma.customer.delete({
-        where: {
-          id: deletedUserId,
-        },
-      });
-    } else if (userType === "company") {
-      await prisma.company.delete({
         where: {
           id: deletedUserId,
         },
@@ -864,7 +863,6 @@ app.post("/user/:userId/changepass", async (req, res) => {
     res.status(500).json({ error: "Failed to change password" });
   }
 });
-
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {

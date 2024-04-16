@@ -105,16 +105,15 @@ model Passenger {
   firstName      String
   middleName     String
   lastName       String
+  passportNumber String
   email          String
   phoneNumber    String
   gender         String
   day            String
   month          String
   year           String
-  country        String @default("")
+  nationality    String
   city           String @default("")
   address        String @default("")
-  nationality    String
-  passportNumber String
   tripId         String
 }
