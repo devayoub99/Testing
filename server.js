@@ -474,19 +474,8 @@ app.post("/company/:id/feedback", async (req, res) => {
   }
 });
 
-// Fetch products route
-// app.get("/products", async (req, res) => {
-//   try {
-//     const products = await prisma.product.findMany({
-//       include: {
-//         company: true, // Include company details in the response
-//       },
-//     });
-
 // Create Safra route
 app.post("/createTrip", async (req, res) => {
-  // console.log(`DATA: ${JSON.stringify(req.body)}`);
-  console.log("This is the req body: ", req.body);
   const {
     safraName,
     safraType,
@@ -500,8 +489,6 @@ app.post("/createTrip", async (req, res) => {
     offer,
     companyId,
   } = req.body;
-
-  // console.log(`safraProgramme => ${safraProgramme}`);
 
   try {
     const safra = await prisma.trip.create({
@@ -527,11 +514,11 @@ app.post("/createTrip", async (req, res) => {
         companyId,
       },
       include: {
-        programme: true, // Include related entries in the response
+        programme: true,
       },
     });
     console.log("Safra created:", safra);
-    res.status(201).json(safra); // Optionally send back the created Safra object
+    res.status(201).json(safra);
   } catch (error) {
     console.error("Failed to create Safra:", error);
     res.status(500).json({ error: "Failed to create Safra" });
@@ -609,7 +596,7 @@ app.get("/trip", async (req, res) => {
         id: tripId,
       },
       include: {
-        programme: true, // Include related SafraProgramme entries
+        programme: true, 
       },
     });
     console.log(trip);
@@ -740,7 +727,10 @@ app.delete("/user/:userId", async (req, res) => {
       }
       storedPassword = company.password;
 
-      const isPasswordMatch = await bcrypt.compare(userPassword, storedPassword);
+      const isPasswordMatch = await bcrypt.compare(
+        userPassword,
+        storedPassword
+      );
       if (!isPasswordMatch) {
         throw new Error("Incorrect password");
       }
@@ -802,7 +792,6 @@ app.delete("/user/:userId", async (req, res) => {
     res.status(500).send("Failed to delete the user: " + error.message);
   }
 });
-
 
 // Change password route
 app.post("/user/:userId/changepass", async (req, res) => {
