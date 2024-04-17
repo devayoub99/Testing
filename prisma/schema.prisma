@@ -38,7 +38,7 @@ model Company {
   website       String?
   logo          String?
   docs          String?
-  ratings       Rating[]
+  ratings       Rating[] 
   averageRating Int      @default(0)
   totalRatings  Int      @default(0)
   approved      Boolean  @default(false)
@@ -63,17 +63,17 @@ model Customer {
   city          String   @default("")
   address       String   @default("")
   safras        Trip[]
-  ratings       Rating[]
+  ratings       Rating[] 
 }
 
 model Rating {
   id           String   @id @default(uuid())
-  customer     Customer @relation(fields: [customerId], references: [id])
-  company      Company  @relation(fields: [companyId], references: [id])
+  customer     Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  company      Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
   customerId   String
   companyId    String
   rating       Int
-  review       String
+  // review       String
 }
 
 model Programme {
