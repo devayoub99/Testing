@@ -388,12 +388,48 @@ app.patch("/company/:id", async (req, res) => {
 });
 
 // Delete company route
-app.delete("/company/:id", async (req, res) => {
-  const companyId = req.params.id;
-
-  console.log(`COMPANYID: ${companyId}`);
+app.delete("/company/:companyId/:adminId/:adminPass", async (req, res) => {
+  const { adminId, adminPass, companyId } = req.params;
 
   try {
+    const company = await prisma.company.findUnique({
+      where: {
+        id: companyId,
+      },
+      include: {
+        safras: true,
+      },
+    });
+
+    if (!company) {
+      throw new Error("Company not found");
+    }
+
+    const admin = await prisma.admin.findUnique({
+      where: {
+        id: adminId,
+      },
+    });
+
+    const storedPassword = admin.password;
+
+    const isPasswordMatch = await bcrypt.compare(adminPass, storedPassword);
+
+    if (!isPasswordMatch) {
+      throw new Error("Incorrect password");
+    }
+
+    // Delete associated trips only if password is correct
+    await Promise.all(
+      company.safras.map(async (trip) => {
+        await prisma.trip.delete({
+          where: {
+            id: trip.id,
+          },
+        });
+      })
+    );
+
     await prisma.company.delete({
       where: {
         id: companyId,
@@ -596,7 +632,7 @@ app.get("/trip", async (req, res) => {
         id: tripId,
       },
       include: {
-        programme: true, 
+        programme: true,
       },
     });
     console.log(trip);
@@ -737,7 +773,7 @@ app.delete("/user/:userId", async (req, res) => {
 
       // Delete associated trips only if password is correct
       await Promise.all(
-        company.safras.map(async (trip) => {
+        company.safras?.map(async (trip) => {
           await prisma.trip.delete({
             where: {
               id: trip.id,
