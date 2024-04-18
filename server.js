@@ -271,7 +271,7 @@ app.patch("/editUser", async (req, res) => {
   }
 });
 
-// Logout route (optional)
+// Logout route
 app.post("/logout", (req, res) => {
   // Perform any necessary cleanup on the server side
   // For example, revoke tokens or update session status
@@ -336,6 +336,7 @@ app.get("/companies/:status", async (req, res) => {
   }
 });
 
+// Fetch company by id route
 app.get("/company", async (req, res) => {
   try {
     const companyId = req.headers.id;
@@ -510,7 +511,7 @@ app.post("/company/:id/feedback", async (req, res) => {
   }
 });
 
-// Create Safra route
+// Create trip route
 app.post("/createTrip", async (req, res) => {
   const {
     safraName,
@@ -607,7 +608,7 @@ app.get("/trips", async (req, res) => {
   }
 });
 
-//  Function to Get ONLY one Trip route
+//  Function to Get ONLY one company trips route
 app.get("/company/:id/trips", async (req, res) => {
   const { id } = req.params;
   try {
@@ -643,8 +644,9 @@ app.get("/trip", async (req, res) => {
   }
 });
 
-app.delete("/trip/:id", (req, res) => {});
+// app.delete("/trip/:id", (req, res) => {});
 
+// Function to save passenger route
 app.post("/passenger", async (req, res) => {
   try {
     const {

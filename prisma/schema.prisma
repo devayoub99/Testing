@@ -113,6 +113,7 @@ model Passenger {
   month          String
   year           String
   nationality    String
+  country        String @default("")
   city           String @default("")
   address        String @default("")
   tripId         String
