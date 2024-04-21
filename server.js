@@ -5,6 +5,7 @@ const cors = require("cors");
 const { PrismaClient } = require("@prisma/client");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken"); // Import the jsonwebtoken library
+const nodemailer = require("nodemailer");
 
 const prisma = new PrismaClient();
 const app = express();
@@ -562,38 +563,64 @@ app.post("/createTrip", async (req, res) => {
   }
 });
 
-// Search a trip route
-app.post("/searchTrips", async (req, res) => {
+// Search route
+app.post("/search/:searchType", async (req, res) => {
+  const { searchType } = req.params;
   const searchQuery = req.body;
-  console.log("Search Query: ", searchQuery);
 
   try {
-    let whereClause = {};
+    if (searchType === "trips") {
+      let whereClause = {};
 
-    if (searchQuery.tripType) {
-      whereClause.type = { equals: searchQuery.tripType };
-    }
-    if (searchQuery.fromLocation) {
-      whereClause.fromLocation = { equals: searchQuery.fromLocation };
-    }
-    if (searchQuery.destination) {
-      whereClause.destination = { equals: searchQuery.destination };
-    }
-    if (searchQuery.dateFrom) {
-      whereClause.dateFrom = { equals: searchQuery.dateFrom };
-    }
-    if (searchQuery.dateTo) {
-      whereClause.dateTo = { equals: searchQuery.dateTo };
-    }
+      if (searchQuery.tripType && searchQuery.tripType !== "All") {
+        whereClause.type = searchQuery.tripType;
+      }
+      if (searchQuery.fromLocation) {
+        whereClause.fromLocation = { contains: searchQuery.fromLocation };
+      }
+      if (searchQuery.destination) {
+        whereClause.destination = searchQuery.destination;
+      }
+      if (searchQuery.dateFrom) {
+        whereClause.dateFrom = searchQuery.dateFrom + "T00:00:00.000Z";
+      }
+      if (searchQuery.dateTo) {
+        whereClause.dateTo = searchQuery.dateTo + "T00:00:00.000Z";
+      }
 
-    const trips = await prisma.trip.findMany({
-      where: whereClause,
-    });
+      const trips = await prisma.trip.findMany({
+        where: whereClause,
+      });
 
-    res.status(200).json(trips);
+      res.status(200).json(trips);
+    } else if (searchType === "companies") {
+      let whereClause = {};
+
+      if (searchQuery.travelAgency) {
+        whereClause.username = { contains: searchQuery.travelAgency };
+      }
+      if (searchQuery.travelAgencyCity) {
+        whereClause.travelAgencyCity = searchQuery.travelAgencyCity;
+      }
+      if (searchQuery.travelAgencyAddress) {
+        whereClause.travelAgencyAddress = searchQuery.travelAgencyAddress;
+      }
+
+      console.log(`Company Things ${whereClause}`);
+
+      const companies = await prisma.company.findMany({
+        where: whereClause,
+      });
+
+      console.log(companies);
+
+      res.status(200).json(companies);
+    } else {
+      res.status(400).json({ error: `Invalid search type: ${searchType}` });
+    }
   } catch (error) {
-    console.error("Failed to search trips:", error);
-    res.status(500).json({ error: "Failed to search trips" });
+    console.error("Failed to search: ", error);
+    res.status(500).json({ error: "Failed to search" });
   }
 });
 
@@ -661,6 +688,7 @@ app.post("/passenger", async (req, res) => {
       month,
       year,
       nationality,
+      address,
       tripId,
     } = req.body;
 
@@ -679,6 +707,7 @@ app.post("/passenger", async (req, res) => {
         month,
         year,
         nationality,
+        address,
         tripId,
       },
     });
@@ -889,6 +918,47 @@ app.post("/user/:userId/changepass", async (req, res) => {
     console.error("Error changing password:", error);
     res.status(500).json({ error: "Failed to change password" });
   }
+});
+
+// * Define a route for sending emails
+app.post("/send-email", (req, res) => {
+  const { to, name, subject, message } = req.body;
+
+  const transporter = nodemailer.createTransport({
+    service: "gmail",
+    host: "smtp.gmail.com",
+    port: 587,
+
+    // * Try without this
+    secure: false,
+
+    auth: {
+      user: "ayuob1999118a@gmail.com",
+      pass: "djveowraliiekbys",
+      //  user: process.env.MAILTRAP_USER,
+      //  pass: process.env.MAILTRAP_PASSWORD
+    },
+  });
+
+  const mailOptions = {
+    from: "SafraTake",
+    to: to,
+    subject: subject,
+    text: message,
+    // * or HTML
+    // html: `<p>Hello world</p>`,
+  };
+
+  // Send the email
+  transporter.sendMail(mailOptions, (error, info) => {
+    if (error) {
+      console.log(error);
+      res.status(500).send("Error sending email");
+    } else {
+      console.log("Email sent: " + info.response);
+      res.send("Email sent successfully");
+    }
+  });
 });
 
 const PORT = process.env.PORT || 3001;
