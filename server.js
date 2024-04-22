@@ -579,7 +579,7 @@ app.post("/search/:searchType", async (req, res) => {
         whereClause.fromLocation = { contains: searchQuery.fromLocation };
       }
       if (searchQuery.destination) {
-        whereClause.destination = searchQuery.destination;
+        whereClause.destination = { contains: searchQuery.destination };
       }
       if (searchQuery.dateFrom) {
         whereClause.dateFrom = searchQuery.dateFrom + "T00:00:00.000Z";
@@ -600,19 +600,19 @@ app.post("/search/:searchType", async (req, res) => {
         whereClause.username = { contains: searchQuery.travelAgency };
       }
       if (searchQuery.travelAgencyCity) {
-        whereClause.travelAgencyCity = searchQuery.travelAgencyCity;
+        whereClause.city = searchQuery.travelAgencyCity;
       }
       if (searchQuery.travelAgencyAddress) {
-        whereClause.travelAgencyAddress = searchQuery.travelAgencyAddress;
+        whereClause.address = searchQuery.travelAgencyAddress;
       }
 
-      console.log(`Company Things ${whereClause}`);
+      // Return only active companies
+      whereClause.approved = true;
+      whereClause.hidden = false;
 
       const companies = await prisma.company.findMany({
         where: whereClause,
       });
-
-      console.log(companies);
 
       res.status(200).json(companies);
     } else {
