@@ -718,9 +718,14 @@ app.post("/passenger", async (req, res) => {
 });
 
 // Fetch passengers route
-app.get("/passengers", async (req, res) => {
+app.get("/trip/:tripId/passengers", async (req, res) => {
+  const { tripId } = req.params;
+
   try {
-    const passengers = await prisma.passenger.findMany();
+    const passengers = await prisma.passenger.findMany({
+      where: { tripId },
+    });
+
     res.json(passengers);
   } catch (error) {
     res.status(500).json({ error: "Failed to retrieve passengers" });
