@@ -168,6 +168,7 @@ app.post("/login", async (req, res) => {
         "your-secret-key",
         { expiresIn: "1h" }
       );
+
       console.log("Login successful for admin:", admin);
       return res.status(200).json({
         message: "Login successful",
@@ -185,6 +186,62 @@ app.post("/login", async (req, res) => {
   } catch (error) {
     console.error("Login failed:", error);
     res.status(500).json({ error: "Login failed" });
+  }
+});
+
+// Developer login route
+
+app.post("/devLogin", async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    const developer = await prisma.developer.findUnique({ where: { email } });
+
+    if (developer && (await bcrypt.compare(password, developer.password))) {
+      // Login successful for admin
+      const token = jwt.sign(
+        { userId: developer.id, userType: "developer" },
+        "your-secret-key",
+        { expiresIn: "1h" }
+      );
+
+      console.log("Login successful for developer:", developer);
+
+      return res.status(200).json({
+        message: "Login successful",
+        userId: developer.id,
+        token,
+        username: developer.username,
+        email: developer.email,
+        userType: "developer",
+      });
+    }
+  } catch (error) {
+    console.error("Login failed:", error);
+    res.status(500).json({ error: "Login failed" });
+  }
+});
+
+// Developer Register router
+
+app.post("/devRegister", async (req, res) => {
+  const { username, email, password } = req.body;
+
+  const hashedPassword = await bcrypt.hash(password, 10);
+
+  try {
+    const developer = await prisma.developer.create({
+      data: {
+        username,
+        email,
+        password: hashedPassword,
+      },
+    });
+    console.log("Registration successful:", developer);
+    res.status(201).json(developer);
+  } catch (error) {
+    console.error("Registration failed:", error);
+    res.status(500).json({ error: "Registration failed" });
   }
 });
 
