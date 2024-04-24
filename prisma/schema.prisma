@@ -126,3 +126,13 @@ model Passenger {
   address        String @default("")
   tripId         String
 }
+
+
+model Image {
+  id         String      @id @default(uuid())
+  filename   String
+  path       String
+  size       Int
+  mime_type  String
+  image_type String
+}

@@ -1,6 +1,11 @@
 // safratake-backend/server.js
 const express = require("express");
 const bodyParser = require("body-parser");
+// * Use multer instead
+const multer = require("multer");
+const path = require("path");
+const fs = require("fs");
+
 const cors = require("cors");
 const { PrismaClient } = require("@prisma/client");
 const bcrypt = require("bcryptjs");
@@ -11,7 +16,15 @@ const prisma = new PrismaClient();
 const app = express();
 
 app.use(cors());
+
 app.use(bodyParser.json());
+
+// * Use multer instead
+const uploadImage = multer({ dest: "uploads/images/" });
+app.use(
+  "/uploads/images",
+  express.static(path.join(__dirname, "uploads/images"))
+);
 
 // Handle unhandled promise rejections
 process.on("unhandledRejection", (reason, promise) => {
@@ -149,6 +162,7 @@ app.post("/login", async (req, res) => {
           username: company.username,
           email: company.email,
           userType: "company",
+          logo: company.logo,
         });
       } else {
         return res.status(401).json({
@@ -1021,6 +1035,56 @@ app.post("/send-email", (req, res) => {
       res.send("Email sent successfully");
     }
   });
+});
+
+// * Upload Images Route
+// "image" should match the name attribute of the file input in your form
+app.post("/uploadImage", uploadImage.single("image"), (req, res) => {
+  const { imageType } = req.body;
+
+  const file = req.file;
+
+  if (!file) {
+    return res.status(400).send("No file uploaded.");
+  }
+  // Save file details to database using Prisma
+  const { originalname, path, size, mimetype } = file;
+  prisma.image
+    .create({
+      data: {
+        filename: originalname,
+        path: path,
+        size: size,
+        mime_type: mimetype,
+        image_type: imageType,
+      },
+    })
+    .then((image) => {
+      console.log("Image metadata saved:", image);
+      res.status(200).json({
+        message: "Image uploaded successfully.",
+        imagePath: path.split("\\").pop(),
+      });
+    })
+    .catch((error) => {
+      console.error("Error saving image metadata:", error);
+      res.status(500).send("Internal server error.");
+    });
+});
+
+// * fetch image Route
+app.get("/image/:filename", (req, res) => {
+  const filename = req.params.filename;
+  const imagePath = path.join(__dirname, "uploads/images", filename);
+
+  // Check if the file exists
+  if (fs.existsSync(imagePath)) {
+    // Send the file to the client
+    res.sendFile(imagePath);
+  } else {
+    // If the file doesn't exist, send a 404 error
+    res.status(404).send("File not found.");
+  }
 });
 
 const PORT = process.env.PORT || 3001;
