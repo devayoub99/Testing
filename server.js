@@ -1,7 +1,6 @@
 // safratake-backend/server.js
 const express = require("express");
 const bodyParser = require("body-parser");
-// * Use multer instead
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
@@ -19,12 +18,15 @@ app.use(cors());
 
 app.use(bodyParser.json());
 
-// * Use multer instead
 const uploadImage = multer({ dest: "uploads/images/" });
+const uploadPDF = multer({ dest: "uploads/pdf/" });
+
 app.use(
   "/uploads/images",
   express.static(path.join(__dirname, "uploads/images"))
 );
+
+app.use("/pdf", express.static(path.join(__dirname, "uploads/pdf")));
 
 // Handle unhandled promise rejections
 process.on("unhandledRejection", (reason, promise) => {
@@ -39,25 +41,31 @@ app.post("/register", async (req, res) => {
     username,
     email,
     password,
+    gender,
+    phoneNumber,
+    additionalPhone,
     country,
     city,
     address,
     website,
     logo,
-    companyDocs,
+    docs,
   } = req.body;
 
   console.log("Received registration request:", {
     userType,
     username,
     email,
+    gender,
     password,
+    phoneNumber,
+    additionalPhone,
     country,
     city,
     address,
     website,
     logo,
-    companyDocs,
+    docs,
   });
 
   // Hash the password before storing it
@@ -72,6 +80,7 @@ app.post("/register", async (req, res) => {
           userType,
           username,
           email,
+          gender,
           password: hashedPassword,
         },
       });
@@ -82,12 +91,14 @@ app.post("/register", async (req, res) => {
           username,
           email,
           password: hashedPassword,
+          phoneNumber,
+          additionalPhone,
           country,
           city,
           address,
           website,
           logo,
-          docs: companyDocs,
+          docs,
         },
       });
     } else if (userType === "admin") {
@@ -324,6 +335,7 @@ app.patch("/editUser", async (req, res) => {
           username: newData.username,
           email: newData.email,
           phoneNumber: newData.phoneNumber,
+          additionalPhone: newData.additionalPhone,
           country: newData.country,
           city: newData.city,
           address: newData.address,
@@ -365,6 +377,56 @@ app.get("/users", async (req, res) => {
   } catch (error) {
     console.error("Failed to fetch users:", error);
     res.status(500).json({ error: "Failed to fetch users" });
+  }
+});
+
+// * Fetch a customer route
+app.get("/customer/:id", async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const customer = await prisma.customer.findUnique({
+      where: {
+        id,
+      },
+    });
+
+    if (!customer) {
+      throw new Error("Customer not found");
+    }
+
+    res.status(200).json(customer);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch the customer" });
+  }
+});
+
+// * Delete a customer route
+app.delete("/customer/:id", async (req, res) => {
+  const { id } = req.params;
+  const { adminId, adminPass } = req.body;
+
+  try {
+    const admin = await prisma.admin.findUnique({ where: { id: adminId } });
+
+    if (!admin) {
+      throw new Error("Unauthorized operation");
+    }
+
+    const storedPassword = admin.password;
+
+    const isPasswordMatch = await bcrypt.compare(adminPass, storedPassword);
+
+    if (!isPasswordMatch) {
+      throw new Error("You entered a wrong password");
+    }
+
+    await prisma.customer.delete({ where: { id } });
+
+    res.status(204).send();
+  } catch (error) {
+    console.error("Failed to delete the customer", error);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -597,6 +659,7 @@ app.post("/createTrip", async (req, res) => {
     safraProgramme,
     offer,
     companyId,
+    tripImages,
   } = req.body;
 
   try {
@@ -612,7 +675,6 @@ app.post("/createTrip", async (req, res) => {
         price: safraPrice,
         programme: {
           create: safraProgramme.map((item) => {
-            console.log(item);
             return {
               program: item.program,
               dayNum: item.dayNum,
@@ -621,6 +683,7 @@ app.post("/createTrip", async (req, res) => {
         },
         offer: offer,
         companyId,
+        tripImages,
       },
       include: {
         programme: true,
@@ -1037,7 +1100,7 @@ app.post("/send-email", (req, res) => {
   });
 });
 
-// * Upload Images Route
+// * Upload image Route
 // "image" should match the name attribute of the file input in your form
 app.post("/uploadImage", uploadImage.single("image"), (req, res) => {
   const { imageType } = req.body;
@@ -1081,6 +1144,100 @@ app.get("/image/:filename", (req, res) => {
   if (fs.existsSync(imagePath)) {
     // Send the file to the client
     res.sendFile(imagePath);
+  } else {
+    // If the file doesn't exist, send a 404 error
+    res.status(404).send("File not found.");
+  }
+});
+
+// * Upload images route
+app.post("/uploadImages", uploadImage.array("images", 10), (req, res) => {
+  const { imageType } = req.body;
+
+  const files = req.files;
+  console.log(files);
+
+  if (!files || files.length === 0) {
+    return res.status(400).send("No files uploaded.");
+  }
+
+  const savePromises = files.map((file) => {
+    const { originalname, path, size, mimetype } = file;
+    return prisma.image.create({
+      data: {
+        filename: originalname,
+        path: path,
+        size: size,
+        mime_type: mimetype,
+        image_type: imageType,
+      },
+    });
+  });
+
+  Promise.all(savePromises)
+    .then((images) => {
+      console.log("Image metadata saved:", images);
+      const imagePaths = images.map((image) => {
+        const filename = image.path
+          .replace(/^.*[\\\/]/, "")
+          .replace(/\.[^/.]+$/, "");
+        return filename;
+      });
+
+      res.status(200).json({
+        message: "Images uploaded successfully.",
+        imagePaths: imagePaths,
+      });
+    })
+    .catch((error) => {
+      console.error("Error saving image metadata:", error);
+      res.status(500).send("Internal server error.");
+    });
+});
+
+// * Upload PDF route
+app.post("/uploadPDF", uploadPDF.single("pdf"), (req, res) => {
+  const { pdfType } = req.body;
+
+  const file = req.file;
+
+  if (!file) {
+    return res.status(400).send("No file uploaded.");
+  }
+  // Save file details to database using Prisma
+  const { originalname, path, size, mimetype } = file;
+  prisma.image
+    .create({
+      data: {
+        filename: originalname,
+        path: path,
+        size: size,
+        mime_type: mimetype,
+        image_type: pdfType,
+      },
+    })
+    .then((pdf) => {
+      console.log("PDF metadata saved:", pdf);
+      res.status(200).json({
+        message: "PDF uploaded successfully.",
+        pdfPath: path.split("\\").pop(),
+      });
+    })
+    .catch((error) => {
+      console.error("Error saving PDF metadata:", error);
+      res.status(500).send("Internal server error.");
+    });
+});
+
+// * fetch PDF Route
+app.get("/pdf/:filename", async (req, res) => {
+  const { filename } = req.params;
+  const PDFPath = path.join(__dirname, "uploads/pdf", filename);
+  if (fs.existsSync(PDFPath)) {
+    // Send the file to the client
+    res.setHeader("Content-Type", "application/pdf");
+    const fileStream = fs.createReadStream(PDFPath);
+    fileStream.pipe(res);
   } else {
     // If the file doesn't exist, send a 404 error
     res.status(404).send("File not found.");
