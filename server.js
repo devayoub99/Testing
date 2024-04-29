@@ -1196,18 +1196,19 @@ app.post("/uploadImages", uploadImage.array("images", 10), (req, res) => {
 });
 
 // * Upload PDF route
-app.post("/uploadPDF", uploadPDF.single("pdf"), (req, res) => {
+app.post("/uploadPDF", uploadPDF.array("pdf", 5), (req, res) => {
   const { pdfType } = req.body;
 
-  const file = req.file;
+  const files = req.files;
 
-  if (!file) {
-    return res.status(400).send("No file uploaded.");
+  if (!files || files.length === 0) {
+    return res.status(400).send("No files uploaded.");
   }
+
   // Save file details to database using Prisma
-  const { originalname, path, size, mimetype } = file;
-  prisma.image
-    .create({
+  const pdfPromises = files.map((file) => {
+    const { originalname, path, size, mimetype } = file;
+    return prisma.image.create({
       data: {
         filename: originalname,
         path: path,
@@ -1215,33 +1216,59 @@ app.post("/uploadPDF", uploadPDF.single("pdf"), (req, res) => {
         mime_type: mimetype,
         image_type: pdfType,
       },
-    })
-    .then((pdf) => {
-      console.log("PDF metadata saved:", pdf);
+    });
+  });
+
+  Promise.all(pdfPromises)
+    .then((pdfs) => {
+      console.log("PDFs metadata saved:", pdfs);
+      const pdfPaths = pdfs.map((pdf) => pdf.path.split("\\").pop());
       res.status(200).json({
-        message: "PDF uploaded successfully.",
-        pdfPath: path.split("\\").pop(),
+        message: "PDFs uploaded successfully.",
+        pdfPaths: pdfPaths,
       });
     })
     .catch((error) => {
-      console.error("Error saving PDF metadata:", error);
+      console.error("Error saving PDFs metadata:", error);
       res.status(500).send("Internal server error.");
     });
 });
 
 // * fetch PDF Route
-app.get("/pdf/:filename", async (req, res) => {
-  const { filename } = req.params;
-  const PDFPath = path.join(__dirname, "uploads/pdf", filename);
-  if (fs.existsSync(PDFPath)) {
-    // Send the file to the client
-    res.setHeader("Content-Type", "application/pdf");
-    const fileStream = fs.createReadStream(PDFPath);
+// app.get("/pdf/:filename", async (req, res) => {
+//   const { filename } = req.params;
+//   const PDFPath = path.join(__dirname, "uploads/pdf", filename);
+//   if (fs.existsSync(PDFPath)) {
+//     // Send the file to the client
+//     res.setHeader("Content-Type", "application/pdf");
+//     const fileStream = fs.createReadStream(PDFPath);
+//     fileStream.pipe(res);
+//   } else {
+//     // If the file doesn't exist, send a 404 error
+//     res.status(404).send("File not found.");
+//   }
+// });
+
+function getFilePath(fileId) {
+  return `uploads/pdf/${fileId}`; // Adjust the file extension accordingly
+}
+
+app.get("/pdfs/:id", (req, res) => {
+  const fileId = req.params.id;
+  const filePath = getFilePath(fileId);
+
+  // Check if the file exists
+  fs.access(filePath, fs.constants.F_OK, (err) => {
+    if (err) {
+      console.error(err);
+      res.status(404).json({ error: "File not found" });
+      return;
+    }
+
+    // Stream the file to the client
+    const fileStream = fs.createReadStream(filePath);
     fileStream.pipe(res);
-  } else {
-    // If the file doesn't exist, send a 404 error
-    res.status(404).send("File not found.");
-  }
+  });
 });
 
 const PORT = process.env.PORT || 3001;
