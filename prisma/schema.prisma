@@ -54,6 +54,7 @@ model Company {
   frozen            Boolean  @default(false)
   hidden            Boolean  @default(false)
   safras            Trip[]
+  passengers        Passenger[]
 }
 
 model Customer {
@@ -72,6 +73,7 @@ model Customer {
   address       String   @default("")
   safras        Trip[]
   ratings       Rating[] 
+  passengers     Passenger[]
 }
 
 model Rating {
@@ -126,6 +128,10 @@ model Passenger {
   city           String @default("")
   address        String @default("")
   tripId         String
+  customerId     String?
+  customer       Customer? @relation(fields: [customerId], references: [id])
+  companyId      String?
+  company        Company? @relation(fields: [companyId], references: [id])
 }
 
 

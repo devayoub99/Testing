@@ -421,6 +421,12 @@ app.delete("/customer/:id", async (req, res) => {
       throw new Error("You entered a wrong password");
     }
 
+    const customer = await prisma.customer.findUnique({ where: { id } });
+
+    if (!customer) {
+      throw new Error("The Customer doesn't exist");
+    }
+
     await prisma.customer.delete({ where: { id } });
 
     res.status(204).send();
@@ -769,6 +775,28 @@ app.get("/trips", async (req, res) => {
   }
 });
 
+app.get("/customerTrips", async (req, res) => {
+  try {
+    const { ids } = req.query;
+    const idList = ids.split(",");
+
+    console.log(idList);
+
+    const trips = await prisma.trip.findMany({
+      where: {
+        id: {
+          in: idList,
+        },
+      },
+    });
+
+    res.status(200).json(trips);
+  } catch (error) {
+    console.error("Failed to fetch trips:", error);
+    res.status(500).json({ error: "Failed to fetch trips" });
+  }
+});
+
 //  Function to Get ONLY one company trips route
 app.get("/company/:id/trips", async (req, res) => {
   const { id } = req.params;
@@ -824,6 +852,8 @@ app.post("/passenger", async (req, res) => {
       nationality,
       address,
       tripId,
+      companyId,
+      customerId,
     } = req.body;
 
     // console.log(`Passenger data: ${req.body}`);
@@ -843,11 +873,34 @@ app.post("/passenger", async (req, res) => {
         nationality,
         address,
         tripId,
+        companyId,
+        customerId,
       },
     });
     res.json(passenger);
   } catch (error) {
     res.status(500).json({ error: "Failed to create passenger" });
+  }
+});
+
+// * Fetch passenger route
+app.get("/passenger/:id", async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const passenger = await prisma.passenger.findMany({
+      where: { customerId: id },
+    });
+
+    if (!passenger) {
+      throw new Error("No Passenger exist");
+    }
+
+    // console.log("Found passenger:", passenger);
+    res.status(200).json(passenger);
+  } catch (error) {
+    console.error(`Failed to fetch the passenger`, error);
+    res.status(500).json({ error: "Failed to retrieve passengers" });
   }
 });
 
@@ -887,7 +940,6 @@ app.get("/user/:userId", async (req, res) => {
     } else {
       return res.status(400).json({ error: "Invalid user type" });
     }
-    console.log(user);
 
     if (!user) {
       return res.status(404).json({ error: "User not found" });
@@ -1234,25 +1286,12 @@ app.post("/uploadPDF", uploadPDF.array("pdf", 5), (req, res) => {
     });
 });
 
-// * fetch PDF Route
-// app.get("/pdf/:filename", async (req, res) => {
-//   const { filename } = req.params;
-//   const PDFPath = path.join(__dirname, "uploads/pdf", filename);
-//   if (fs.existsSync(PDFPath)) {
-//     // Send the file to the client
-//     res.setHeader("Content-Type", "application/pdf");
-//     const fileStream = fs.createReadStream(PDFPath);
-//     fileStream.pipe(res);
-//   } else {
-//     // If the file doesn't exist, send a 404 error
-//     res.status(404).send("File not found.");
-//   }
-// });
-
+// * function related to GET PDF
 function getFilePath(fileId) {
   return `uploads/pdf/${fileId}`; // Adjust the file extension accordingly
 }
 
+// * fetch PDF Route
 app.get("/pdfs/:id", (req, res) => {
   const fileId = req.params.id;
   const filePath = getFilePath(fileId);
