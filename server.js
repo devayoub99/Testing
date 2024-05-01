@@ -72,6 +72,41 @@ app.post("/register", async (req, res) => {
   const hashedPassword = await bcrypt.hash(password, 10);
 
   try {
+    // Check if the email is already exist
+
+    const isDevExist = await prisma.developer.findUnique({
+      where: { email },
+    });
+
+    const isSuperAdminExist = await prisma.superAdmin.findUnique({
+      where: { email },
+    });
+
+    const isCustomerExist = await prisma.customer.findUnique({
+      where: { email },
+    });
+
+    const isAdminExist = await prisma.admin.findUnique({
+      where: { email },
+    });
+
+    const isCompanyExist = await prisma.company.findUnique({
+      where: { email },
+    });
+
+    if (
+      isDevExist ||
+      isSuperAdminExist ||
+      isCustomerExist ||
+      isAdminExist ||
+      isCompanyExist
+    ) {
+      console.error("You already have an account:", email);
+      return res.status(400).json({
+        error: "You already have an account. Would you like to login?",
+      });
+    }
+
     let newUser;
 
     if (userType === "customer") {
