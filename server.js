@@ -942,13 +942,40 @@ app.get("/passenger/:id", async (req, res) => {
 // Fetch passengers route
 app.get("/trip/:tripId/passengers", async (req, res) => {
   const { tripId } = req.params;
+  const { userType, userId } = req.query;
 
   try {
-    const passengers = await prisma.passenger.findMany({
-      where: { tripId },
-    });
+    let user;
+    if (userType === "admin") {
+      user = await prisma.admin.findUnique({ where: { id: userId } });
+    } else if (userType === "developer") {
+      user = await prisma.developer.findUnique({ where: { id: userId } });
+    } else if (userType === "company") {
+      user = await prisma.company.findUnique({ where: { id: userId } });
+    } else {
+      res.status(401).json({ msg: "Unauthorized" });
+      return;
+    }
 
-    res.json(passengers);
+    if (!user) {
+      res.status(401).json({ msg: "Unauthorized" });
+      return;
+    }
+
+    if (userType === "admin" || userType === "developer") {
+      const passengers = await prisma.passenger.findMany({
+        where: { tripId },
+      });
+      res.json(passengers);
+    } else if (userType === "company") {
+      const passengers = await prisma.passenger.findMany({
+        where: { tripId, companyId: userId },
+      });
+      res.json(passengers);
+    } else {
+      res.status(401).json({ msg: "Unauthorized" });
+      return;
+    }
   } catch (error) {
     res.status(500).json({ error: "Failed to retrieve passengers" });
   }
