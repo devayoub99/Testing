@@ -50,6 +50,7 @@ app.post("/register", async (req, res) => {
     website,
     logo,
     docs,
+    description,
   } = req.body;
 
   console.log("Received registration request:", {
@@ -66,6 +67,7 @@ app.post("/register", async (req, res) => {
     website,
     logo,
     docs,
+    description,
   });
 
   // Hash the password before storing it
@@ -134,6 +136,7 @@ app.post("/register", async (req, res) => {
           website,
           logo,
           docs,
+          description,
         },
       });
     } else if (userType === "admin") {
@@ -868,7 +871,42 @@ app.get("/trip", async (req, res) => {
   }
 });
 
-// app.delete("/trip/:id", (req, res) => {});
+app.delete("/trip/:id", async (req, res) => {
+  const { id } = req.params;
+
+  const { userType, userId } = req.query;
+
+  try {
+    let user;
+
+    switch (userType) {
+      case "developer":
+        user = await prisma.developer.findUnique({ where: { id: userId } });
+        break;
+      case "superAdmin":
+        user = await prisma.superAdmin.findUnique({ where: { id: userId } });
+        break;
+      case "admin":
+        user = await prisma.admin.findUnique({ where: { id: userId } });
+        break;
+      case "company":
+        user = await prisma.company.findUnique({ where: { id: userId } });
+        break;
+      default:
+        throw new Error("Invalid user type");
+    }
+
+    if (!user) {
+      console.log("You are not allowed to do that operation");
+    }
+
+    await prisma.trip.delete({ where: { id } });
+    res.status(204).send();
+  } catch (error) {
+    console.error("Sorry, Something went wrong");
+    res.status(500).send("Internal server error.");
+  }
+});
 
 // Function to save passenger route
 app.post("/passenger", async (req, res) => {
