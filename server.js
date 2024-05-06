@@ -148,6 +148,15 @@ app.post("/register", async (req, res) => {
           password: hashedPassword,
         },
       });
+    } else if (userType === "superAdmin") {
+      newUser = await prisma.superAdmin.create({
+        data: {
+          userType,
+          username,
+          email,
+          password: hashedPassword,
+        },
+      });
     } else {
       console.error("Invalid userType:", userType);
       return res.status(400).json({ error: "Invalid user type" });
@@ -240,6 +249,27 @@ app.post("/login", async (req, res) => {
         username: admin.username,
         email: admin.email,
         userType: "admin",
+      });
+    }
+
+    const superAdmin = await prisma.superAdmin.findUnique({ where: { email } });
+
+    if (superAdmin && (await bcrypt.compare(password, superAdmin.password))) {
+      // Login successful for admin
+      const token = jwt.sign(
+        { userId: superAdmin.id, userType: "superAdmin" },
+        "your-secret-key",
+        { expiresIn: "1h" }
+      );
+
+      console.log("Login successful for superAdmin:", superAdmin);
+      return res.status(200).json({
+        message: "Login successful",
+        userId: superAdmin.id,
+        token,
+        username: superAdmin.username,
+        email: superAdmin.email,
+        userType: "superAdmin",
       });
     }
 
@@ -442,10 +472,17 @@ app.get("/customer/:id", async (req, res) => {
 // * Delete a customer route
 app.delete("/customer/:id", async (req, res) => {
   const { id } = req.params;
-  const { adminId, adminPass } = req.body;
+  const { adminId, adminPass, adminType } = req.body;
 
   try {
-    const admin = await prisma.admin.findUnique({ where: { id: adminId } });
+    let admin;
+    if (adminType === "developer") {
+      admin = await prisma.developer.findUnique({ where: { id: adminId } });
+    } else if (adminType === "superAdmin") {
+      admin = await prisma.superAdmin.findUnique({ where: { id: adminId } });
+    } else if (adminType === "admin") {
+      admin = await prisma.admin.findUnique({ where: { id: adminId } });
+    }
 
     if (!admin) {
       throw new Error("Unauthorized operation");
@@ -567,60 +604,82 @@ app.patch("/company/:id", async (req, res) => {
 });
 
 // Delete company route
-app.delete("/company/:companyId/:adminId/:adminPass", async (req, res) => {
-  const { adminId, adminPass, companyId } = req.params;
+app.delete(
+  "/company/:companyId/:adminId/:adminPass/:adminType",
+  async (req, res) => {
+    const { adminId, adminPass, adminType, companyId } = req.params;
 
-  try {
-    const company = await prisma.company.findUnique({
-      where: {
-        id: companyId,
-      },
-      include: {
-        safras: true,
-      },
-    });
+    try {
+      const company = await prisma.company.findUnique({
+        where: {
+          id: companyId,
+        },
+        include: {
+          safras: true,
+        },
+      });
 
-    if (!company) {
-      throw new Error("Company not found");
-    }
+      if (!company) {
+        throw new Error("Company not found");
+      }
 
-    const admin = await prisma.admin.findUnique({
-      where: {
-        id: adminId,
-      },
-    });
-
-    const storedPassword = admin.password;
-
-    const isPasswordMatch = await bcrypt.compare(adminPass, storedPassword);
-
-    if (!isPasswordMatch) {
-      throw new Error("Incorrect password");
-    }
-
-    // Delete associated trips only if password is correct
-    await Promise.all(
-      company.safras.map(async (trip) => {
-        await prisma.trip.delete({
+      let admin;
+      if (adminType === "developer") {
+        admin = await prisma.developer.findUnique({
           where: {
-            id: trip.id,
+            id: adminId,
           },
         });
-      })
-    );
+      } else if (adminType === "superAdmin") {
+        admin = await prisma.superAdmin.findUnique({
+          where: {
+            id: adminId,
+          },
+        });
+      } else if (adminType === "admin") {
+        admin = await prisma.admin.findUnique({
+          where: {
+            id: adminId,
+          },
+        });
+      }
 
-    await prisma.company.delete({
-      where: {
-        id: companyId,
-      },
-    });
+      if (!admin) {
+        throw new Error("Invalid admin");
+      }
 
-    res.status(204).send(); // Send a successful response with no content
-  } catch (error) {
-    console.error("Failed to delete the User", error);
-    res.status(500).send("Failed to delete the User");
+      const storedPassword = admin.password;
+
+      const isPasswordMatch = await bcrypt.compare(adminPass, storedPassword);
+
+      if (!isPasswordMatch) {
+        throw new Error("Incorrect password");
+      }
+
+      // Delete associated trips only if password is correct
+      await Promise.all(
+        company.safras.map(async (trip) => {
+          await prisma.trip.delete({
+            where: {
+              id: trip.id,
+            },
+          });
+        })
+      );
+
+      await prisma.company.delete({
+        where: {
+          id: companyId,
+        },
+      });
+
+      res.status(204).send(); // Send a successful response with no content
+    } catch (error) {
+      console.error("Failed to delete the User", error);
+      res.status(500).send("Failed to delete the User");
+    }
   }
-});
+);
 
 // * Add feedback to a company route
 app.post("/company/:id/feedback", async (req, res) => {
