@@ -109,7 +109,7 @@ model Trip {
   fromLocation String
   destination  String
   offer        String?     @db.Text
-  tripImages   String
+  tripImages   String?
 }
 
 model Passenger {
