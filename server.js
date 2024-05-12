@@ -23,6 +23,7 @@ const uploadPDF = multer({ dest: "uploads/pdf/" });
 
 app.use(
   "/uploads/images",
+  // "/image",
   express.static(path.join(__dirname, "uploads/images"))
 );
 
@@ -786,7 +787,7 @@ app.post("/createTrip", async (req, res) => {
         },
         offer: offer,
         companyId,
-        tripImages,
+        tripImages: tripImages?.join(","),
       },
       include: {
         programme: true,
@@ -1337,7 +1338,7 @@ app.post("/uploadImage", uploadImage.single("image"), (req, res) => {
       console.log("Image metadata saved:", image);
       res.status(200).json({
         message: "Image uploaded successfully.",
-        imagePath: path.split("\\").pop(),
+        imagePath: path.split(/[\/\\]/).pop()
       });
     })
     .catch((error) => {
@@ -1350,6 +1351,8 @@ app.post("/uploadImage", uploadImage.single("image"), (req, res) => {
 app.get("/image/:filename", (req, res) => {
   const filename = req.params.filename;
   const imagePath = path.join(__dirname, "uploads/images", filename);
+
+  console.log(filename)
 
   // Check if the file exists
   if (fs.existsSync(imagePath)) {
@@ -1433,7 +1436,7 @@ app.post("/uploadPDF", uploadPDF.array("pdf", 5), (req, res) => {
   Promise.all(pdfPromises)
     .then((pdfs) => {
       console.log("PDFs metadata saved:", pdfs);
-      const pdfPaths = pdfs.map((pdf) => pdf.path.split("\\").pop());
+      const pdfPaths = pdfs.map((pdf) => pdf.path.split(/[\/\\]/).pop());
       res.status(200).json({
         message: "PDFs uploaded successfully.",
         pdfPaths: pdfPaths,
@@ -1454,6 +1457,8 @@ function getFilePath(fileId) {
 app.get("/pdfs/:id", (req, res) => {
   const fileId = req.params.id;
   const filePath = getFilePath(fileId);
+
+  console.log(filePath);
 
   // Check if the file exists
   fs.access(filePath, fs.constants.F_OK, (err) => {
