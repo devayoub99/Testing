@@ -1338,6 +1338,7 @@ app.post("/uploadImage", uploadImage.single("image"), (req, res) => {
       console.log("Image metadata saved:", image);
       res.status(200).json({
         message: "Image uploaded successfully.",
+        // * Regular expression to filter the id
         imagePath: path.split(/[\/\\]/).pop()
       });
     })
@@ -1436,6 +1437,7 @@ app.post("/uploadPDF", uploadPDF.array("pdf", 5), (req, res) => {
   Promise.all(pdfPromises)
     .then((pdfs) => {
       console.log("PDFs metadata saved:", pdfs);
+      // * Regular expression to filter the id
       const pdfPaths = pdfs.map((pdf) => pdf.path.split(/[\/\\]/).pop());
       res.status(200).json({
         message: "PDFs uploaded successfully.",
