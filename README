@@ -11,3 +11,7 @@ command = "yarn install && yarn prisma:generate && yarn migrate"
 # Netlify Or Render For restting database
 
 command = "yarn install && yarn prisma migrate reset --force && yarn prisma:generate"
+
+# Netlify Or Render After restting database
+
+command = "yarn && yarn prisma generate reset && yarn prisma migrate"
