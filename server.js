@@ -215,8 +215,8 @@ app.post("/login", async (req, res) => {
         return res.status(200).json({
           message: "Login successful",
           ...company,
-        userId: company.id,
-        token,
+          userId: company.id,
+          token,
         });
       } else {
         return res.status(401).json({
@@ -867,16 +867,25 @@ app.get("/customerTrips", async (req, res) => {
     const { ids } = req.query;
     const idList = ids.split(",");
 
-    console.log(idList);
-
-    const trips = await prisma.trip.findMany({
-      where: {
-        id: {
-          in: idList,
-        },
-      },
+    // Using map to create an array of promises
+    const tripPromises = idList.map(async (id) => {
+      const trip = await prisma.trip.findUnique({
+        where: { id },
+      });
+      return trip;
     });
 
+    // Wait for all promises to resolve
+    const trips = await Promise.all(tripPromises);
+
+    // Check if any trip was not found
+    const notFound = trips.some((trip) => !trip);
+    if (notFound) {
+      res.status(404).json("Trip not found");
+      return; // Exit the function to prevent further execution
+    }
+
+    // Send the response with all trips
     res.status(200).json(trips);
   } catch (error) {
     console.error("Failed to fetch trips:", error);
