@@ -6,9 +6,8 @@
   # command = "yarn && yarn prisma migrate resolve --rolled-back 20240414091214_migration2_14_april_12 && yarn prisma:generate && yarn prisma migrate deploy"
   # command = "yarn && yarn prisma migrate resolve --applied 20240414091214_migration2_14_april_12 && yarn prisma:generate && yarn prisma migrate deploy"
  
-  # functions = "functions"
-  # publish = "functions"
-    publish = "dist"
+  functions = "functions"
+  publish = "functions"
 
 [[headers]]
   for = "/*"
