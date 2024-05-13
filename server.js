@@ -191,11 +191,9 @@ app.post("/login", async (req, res) => {
       console.log("Login successful for customer:", customer);
       return res.status(200).json({
         message: "Login successful",
+        ...customer,
         userId: customer.id,
         token,
-        username: customer.username,
-        email: customer.email,
-        userType: "customer",
       });
     }
 
@@ -216,12 +214,9 @@ app.post("/login", async (req, res) => {
         console.log("Login successful for company:", company);
         return res.status(200).json({
           message: "Login successful",
-          userId: company.id,
-          token,
-          username: company.username,
-          email: company.email,
-          userType: "company",
-          logo: company.logo,
+          ...company,
+        userId: company.id,
+        token,
         });
       } else {
         return res.status(401).json({
@@ -245,11 +240,9 @@ app.post("/login", async (req, res) => {
       console.log("Login successful for admin:", admin);
       return res.status(200).json({
         message: "Login successful",
+        ...admin,
         userId: admin.id,
         token,
-        username: admin.username,
-        email: admin.email,
-        userType: "admin",
       });
     }
 
@@ -266,11 +259,9 @@ app.post("/login", async (req, res) => {
       console.log("Login successful for superAdmin:", superAdmin);
       return res.status(200).json({
         message: "Login successful",
+        ...superAdmin,
         userId: superAdmin.id,
         token,
-        username: superAdmin.username,
-        email: superAdmin.email,
-        userType: "superAdmin",
       });
     }
 
@@ -303,11 +294,9 @@ app.post("/devLogin", async (req, res) => {
 
       return res.status(200).json({
         message: "Login successful",
+        ...developer,
         userId: developer.id,
         token,
-        username: developer.username,
-        email: developer.email,
-        userType: "developer",
       });
     }
   } catch (error) {
