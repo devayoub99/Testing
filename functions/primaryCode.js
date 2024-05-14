@@ -19,6 +19,7 @@ app.use((req, res, next) => {
   next();
 });
 
+// /.netlify/functions
 
 
 module.exports = app;
