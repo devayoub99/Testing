@@ -186,7 +186,7 @@ app.post("/register", async (req, res) => {
 });
 
 // Login route
-app.post("/.netlify/functions/login", async (req, res) => {
+app.post("/.netlify/functions/server", async (req, res) => {
   const { email, password } = req.body;
 
   console.log("Our Credentials", email, password);
